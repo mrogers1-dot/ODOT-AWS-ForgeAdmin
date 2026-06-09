@@ -1,0 +1,39 @@
+{
+  "title": "VerificationCompleted",
+  "description": "Emitted when the Verification Agent completes outcome comparison",
+  "type": "object",
+  "required": ["version", "correlationId", "timestamp", "source", "detailType", "payload"],
+  "properties": {
+    "version": { "type": "string", "const": "1.0.0" },
+    "correlationId": { "type": "string", "format": "uuid" },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "source": { "type": "string", "const": "forgeadmin.orchestration" },
+    "detailType": { "type": "string", "const": "verification.completed" },
+    "payload": {
+      "type": "object",
+      "required": ["workItemId", "planId", "overallResult", "stepResults"],
+      "properties": {
+        "workItemId": { "type": "string", "format": "uuid" },
+        "planId": { "type": "string", "format": "uuid" },
+        "overallResult": { "type": "string", "enum": ["pass", "fail", "partial"] },
+        "stepResults": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["stepIndex", "result", "actualOutcome"],
+            "properties": {
+              "stepIndex": { "type": "integer", "minimum": 1 },
+              "result": { "type": "string", "enum": ["pass", "fail"] },
+              "actualOutcome": { "type": "string" },
+              "mismatchDetail": { "type": "string" }
+            },
+            "additionalProperties": false
+          }
+        },
+        "flaggedForReview": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

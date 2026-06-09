@@ -1,0 +1,405 @@
+openapi: 3.1.0
+info:
+  title: ForgeAdmin Dashboard API
+  version: 1.0.0
+  description: REST API for the ForgeAdmin Dashboard — module management, approvals, execution history, and audit trail.
+
+servers:
+  - url: https://api.forgeadmin.dot.ohio.gov/v1
+    description: Production
+  - url: http://localhost:3000/v1
+    description: Local development
+
+security:
+  - cognitoAuth: []
+
+paths:
+  /modules:
+    get:
+      operationId: listModules
+      summary: List all modules with current state
+      tags: [Modules]
+      responses:
+        "200":
+          description: List of modules
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Module"
+
+  /modules/{moduleId}/state:
+    patch:
+      operationId: updateModuleState
+      summary: Change module operational state
+      tags: [Modules]
+      x-rbac: [team_lead]
+      parameters:
+        - $ref: "#/components/parameters/moduleId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [state]
+              properties:
+                state:
+                  type: string
+                  enum: [enabled, disabled, shadow]
+      responses:
+        "200":
+          description: State updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Module"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
+  /modules/{moduleId}/config:
+    patch:
+      operationId: updateModuleConfig
+      summary: Update module configuration
+      tags: [Modules]
+      x-rbac: [team_lead]
+      parameters:
+        - $ref: "#/components/parameters/moduleId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ModuleConfig"
+      responses:
+        "200":
+          description: Config updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Module"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
+  /approvals:
+    get:
+      operationId: listApprovals
+      summary: List pending approvals
+      tags: [Approvals]
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [pending, approved, rejected, expired]
+            default: pending
+      responses:
+        "200":
+          description: List of approvals
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Approval"
+
+  /approvals/{approvalId}/decision:
+    post:
+      operationId: submitApprovalDecision
+      summary: Approve or reject a pending plan
+      tags: [Approvals]
+      x-rbac: [team_lead, team_member]
+      parameters:
+        - name: approvalId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [decision]
+              properties:
+                decision:
+                  type: string
+                  enum: [approved, rejected]
+                reason:
+                  type: string
+      responses:
+        "200":
+          description: Decision recorded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Approval"
+
+  /executions:
+    get:
+      operationId: listExecutions
+      summary: List execution history
+      tags: [Executions]
+      parameters:
+        - name: moduleId
+          in: query
+          schema:
+            type: string
+        - name: from
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: to
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: riskLevel
+          in: query
+          schema:
+            type: string
+            enum: [low, medium, high]
+        - name: outcome
+          in: query
+          schema:
+            type: string
+            enum: [success, failure, partial]
+      responses:
+        "200":
+          description: List of executions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Execution"
+
+  /audit:
+    get:
+      operationId: listAuditEntries
+      summary: Query audit trail
+      tags: [Audit]
+      parameters:
+        - name: actor
+          in: query
+          schema:
+            type: string
+        - name: context
+          in: query
+          schema:
+            type: string
+        - name: from
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: to
+          in: query
+          schema:
+            type: string
+            format: date-time
+      responses:
+        "200":
+          description: Audit entries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AuditEntry"
+
+  /agents/{agentName}/token-budget:
+    get:
+      operationId: getAgentTokenBudget
+      summary: Get per-agent token/context window consumption
+      tags: [Agents]
+      parameters:
+        - name: agentName
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Token budget info
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TokenBudgetResponse"
+
+components:
+  securitySchemes:
+    cognitoAuth:
+      type: openIdConnect
+      openIdConnectUrl: https://cognito-idp.us-east-2.amazonaws.com/{userPoolId}/.well-known/openid-configuration
+
+  parameters:
+    moduleId:
+      name: moduleId
+      in: path
+      required: true
+      schema:
+        type: string
+
+  responses:
+    Forbidden:
+      description: Insufficient permissions
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              requiredRole:
+                type: string
+
+  schemas:
+    Module:
+      type: object
+      required: [id, name, state, config]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        state:
+          type: string
+          enum: [enabled, disabled, shadow]
+        config:
+          $ref: "#/components/schemas/ModuleConfig"
+        lastExecution:
+          type: string
+          format: date-time
+        confidenceScore:
+          type: integer
+          minimum: 0
+          maximum: 100
+
+    ModuleConfig:
+      type: object
+      properties:
+        confidenceThreshold:
+          type: integer
+          minimum: 0
+          maximum: 100
+          description: Minimum confidence score for auto-execution
+        promotionStrategy:
+          type: string
+          enum: [manual, auto-suggest]
+          description: How module promotion is handled
+        evaluationWindow:
+          type: integer
+          minimum: 7
+          maximum: 90
+          description: Days to evaluate before promotion suggestion
+        slaPeriod:
+          type: integer
+          minimum: 5
+          maximum: 1440
+          description: Approval SLA period in minutes
+
+    Approval:
+      type: object
+      required: [id, workItemId, planId, status]
+      properties:
+        id:
+          type: string
+          format: uuid
+        workItemId:
+          type: string
+          format: uuid
+        planId:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [pending, approved, rejected, expired]
+        confidenceScore:
+          type: integer
+          minimum: 0
+          maximum: 100
+        riskLevel:
+          type: string
+          enum: [low, medium, high]
+        justification:
+          type: string
+        serviceNowTicketId:
+          type: string
+        decidedBy:
+          type: string
+        decidedAt:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+
+    Execution:
+      type: object
+      required: [id, workItemId, planId, outcome]
+      properties:
+        id:
+          type: string
+          format: uuid
+        workItemId:
+          type: string
+          format: uuid
+        planId:
+          type: string
+          format: uuid
+        moduleId:
+          type: string
+        outcome:
+          type: string
+          enum: [success, failure, partial]
+        riskLevel:
+          type: string
+          enum: [low, medium, high]
+        stepsExecuted:
+          type: integer
+        durationMs:
+          type: integer
+        executedAt:
+          type: string
+          format: date-time
+
+    AuditEntry:
+      type: object
+      required: [id, actor, action, context, timestamp]
+      properties:
+        id:
+          type: string
+          format: uuid
+        actor:
+          type: string
+        action:
+          type: string
+        context:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        resourceId:
+          type: string
+        details:
+          type: object
+
+    TokenBudgetResponse:
+      type: object
+      required: [agentName, usedTokens, maxTokens, utilizationPercent]
+      properties:
+        agentName:
+          type: string
+        usedTokens:
+          type: integer
+        maxTokens:
+          type: integer
+        utilizationPercent:
+          type: number
+          minimum: 0
+          maximum: 100

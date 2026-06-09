@@ -1,0 +1,27 @@
+{
+  "title": "CircuitBreakerTripped",
+  "description": "Emitted when a circuit breaker trips due to error threshold",
+  "type": "object",
+  "required": ["version", "correlationId", "timestamp", "source", "detailType", "payload"],
+  "properties": {
+    "version": { "type": "string", "const": "1.0.0" },
+    "correlationId": { "type": "string", "format": "uuid" },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "source": { "type": "string", "const": "forgeadmin.platform" },
+    "detailType": { "type": "string", "const": "circuit-breaker.tripped" },
+    "payload": {
+      "type": "object",
+      "required": ["contextName", "reason", "trippedAt", "state"],
+      "properties": {
+        "contextName": { "type": "string", "minLength": 1 },
+        "reason": { "type": "string", "minLength": 1 },
+        "trippedAt": { "type": "string", "format": "date-time" },
+        "state": { "type": "string", "enum": ["open", "half-open", "closed"] },
+        "errorCount": { "type": "integer", "minimum": 0 },
+        "threshold": { "type": "integer", "minimum": 1 }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,26 @@
+{
+  "title": "PlanRejected",
+  "description": "Emitted when a team lead rejects a proposed execution plan",
+  "type": "object",
+  "required": ["version", "correlationId", "timestamp", "source", "detailType", "payload"],
+  "properties": {
+    "version": { "type": "string", "const": "1.0.0" },
+    "correlationId": { "type": "string", "format": "uuid" },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "source": { "type": "string", "const": "forgeadmin.dashboard" },
+    "detailType": { "type": "string", "const": "plan.rejected" },
+    "payload": {
+      "type": "object",
+      "required": ["workItemId", "planId", "rejectedBy", "rejectedAt", "reason"],
+      "properties": {
+        "workItemId": { "type": "string", "format": "uuid" },
+        "planId": { "type": "string", "format": "uuid" },
+        "rejectedBy": { "type": "string", "minLength": 1 },
+        "rejectedAt": { "type": "string", "format": "date-time" },
+        "reason": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

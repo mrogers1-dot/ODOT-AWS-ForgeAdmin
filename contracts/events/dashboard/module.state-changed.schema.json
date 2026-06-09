@@ -1,0 +1,26 @@
+{
+  "title": "ModuleStateChanged",
+  "description": "Emitted when a module's operational state changes (enabled/disabled/shadow)",
+  "type": "object",
+  "required": ["version", "correlationId", "timestamp", "source", "detailType", "payload"],
+  "properties": {
+    "version": { "type": "string", "const": "1.0.0" },
+    "correlationId": { "type": "string", "format": "uuid" },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "source": { "type": "string", "const": "forgeadmin.dashboard" },
+    "detailType": { "type": "string", "const": "module.state-changed" },
+    "payload": {
+      "type": "object",
+      "required": ["moduleId", "previousState", "newState", "changedBy"],
+      "properties": {
+        "moduleId": { "type": "string", "minLength": 1 },
+        "previousState": { "type": "string", "enum": ["enabled", "disabled", "shadow"] },
+        "newState": { "type": "string", "enum": ["enabled", "disabled", "shadow"] },
+        "changedBy": { "type": "string", "minLength": 1 },
+        "changedAt": { "type": "string", "format": "date-time" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,28 @@
+{
+  "title": "NotificationFailed",
+  "description": "Emitted when notification delivery fails on a channel, triggering escalation",
+  "type": "object",
+  "required": ["version", "correlationId", "timestamp", "source", "detailType", "payload"],
+  "properties": {
+    "version": { "type": "string", "const": "1.0.0" },
+    "correlationId": { "type": "string", "format": "uuid" },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "source": { "type": "string", "const": "forgeadmin.communication" },
+    "detailType": { "type": "string", "const": "notification.failed" },
+    "payload": {
+      "type": "object",
+      "required": ["notificationId", "channel", "recipient", "failedAt", "error"],
+      "properties": {
+        "notificationId": { "type": "string", "format": "uuid" },
+        "channel": { "type": "string", "enum": ["teams", "slack", "email", "dashboard"] },
+        "recipient": { "type": "string", "minLength": 1 },
+        "failedAt": { "type": "string", "format": "date-time" },
+        "error": { "type": "string", "minLength": 1 },
+        "escalationTier": { "type": "integer", "minimum": 1, "maximum": 3 },
+        "workItemId": { "type": "string", "format": "uuid" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

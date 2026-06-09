@@ -1,0 +1,40 @@
+{
+  "$id": "https://forgeadmin.dot.ohio.gov/schemas/correlation-rules/schema",
+  "title": "CorrelationRule",
+  "description": "Schema for correlation rule definitions",
+  "type": "object",
+  "required": ["id", "name", "type", "matchAttributes", "window", "minItems", "action", "priority", "enabled"],
+  "properties": {
+    "id": { "type": "string", "minLength": 1 },
+    "name": { "type": "string", "minLength": 1 },
+    "type": { "type": "string", "enum": ["temporal", "infrastructure", "causal", "repeat"] },
+    "description": { "type": "string" },
+    "matchAttributes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["field", "matchType"],
+        "properties": {
+          "field": { "type": "string", "minLength": 1 },
+          "matchType": { "type": "string", "enum": ["exact", "fuzzy"] },
+          "threshold": { "type": "number", "minimum": 0, "maximum": 1 }
+        }
+      }
+    },
+    "window": {
+      "type": "object",
+      "required": ["gapSeconds"],
+      "properties": {
+        "gapSeconds": { "type": "integer", "minimum": 1 },
+        "maxDurationSeconds": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "minItems": { "type": "integer", "minimum": 2 },
+    "action": { "type": "string", "enum": ["merge", "enrich"] },
+    "priority": { "type": "integer", "minimum": 1 },
+    "enabled": { "type": "boolean" },
+    "lookbackDays": { "type": "integer", "minimum": 1 }
+  },
+  "additionalProperties": false
+}

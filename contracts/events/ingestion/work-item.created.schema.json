@@ -1,0 +1,32 @@
+{
+  "title": "WorkItemCreated",
+  "description": "Emitted when a new work item is ingested and normalized from any source system",
+  "type": "object",
+  "required": ["version", "correlationId", "timestamp", "source", "detailType", "payload"],
+  "properties": {
+    "version": { "type": "string", "const": "1.0.0" },
+    "correlationId": { "type": "string", "format": "uuid" },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "source": { "type": "string", "const": "forgeadmin.ingestion" },
+    "detailType": { "type": "string", "const": "work-item.created" },
+    "payload": {
+      "type": "object",
+      "required": ["workItemId", "sourceSystem", "originalId", "title", "description", "sourceTimestamp"],
+      "properties": {
+        "workItemId": { "type": "string", "format": "uuid" },
+        "sourceSystem": { "type": "string", "enum": ["servicenow", "email", "fortisiem"] },
+        "originalId": { "type": "string", "minLength": 1 },
+        "title": { "type": "string", "minLength": 1 },
+        "description": { "type": "string" },
+        "priority": { "type": "string" },
+        "urgency": { "type": "string" },
+        "affectedSystem": { "type": "string" },
+        "reporter": { "type": "string" },
+        "sourceTimestamp": { "type": "string", "format": "date-time" },
+        "metadata": { "type": "object", "additionalProperties": true }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

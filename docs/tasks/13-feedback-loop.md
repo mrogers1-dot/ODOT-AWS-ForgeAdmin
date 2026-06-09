@@ -38,13 +38,9 @@
   - _Design Spec: Sections 3.1, 3.2_
 
 - [ ] 14.5 Implement feedback capture handler
-  - Create `src/contexts/knowledge-base/handlers/feedback-capture-handler.ts`: EventBridge triggered Lambda
-  - Map incoming event to FeedbackEntry using mappers
-  - Write feedback document to S3: `feedback/{category}/{YYYY-MM}/{feedbackId}.json`
-  - Write index entry to `feedback-index` DynamoDB table
-  - Publish `feedback.captured` event
-  - Handle mapping failures gracefully: log error, send to DLQ, never block execution flow
-  - Apply structured logging with correlationId and X-Ray tracing
+  - **RED**: Write tests: (1) approval.decision event maps to correct FeedbackEntry, (2) execution.completed maps correctly, (3) execution.failed maps correctly, (4) verification.completed maps correctly, (5) feedback document written to S3 with correct path, (6) index entry written to DynamoDB, (7) mapping failure goes to DLQ (never blocks execution)
+  - **GREEN**: Create `src/contexts/knowledge-base/handlers/feedback-capture-handler.ts`: EventBridge triggered Lambda. Map incoming event to FeedbackEntry. Write to S3 and DynamoDB index. Publish `feedback.captured` event. Handle mapping failures gracefully.
+  - **REFACTOR**: Ensure mapper is pure function; validate S3 path structure is consistent
   - _Design Spec: Sections 3.2, 3.3, 6_
 
 - [ ] 14.6 Implement feedback aggregation domain models
@@ -53,15 +49,9 @@
   - _Design Spec: Sections 4.2, 4.3_
 
 - [ ] 14.7 Implement feedback aggregator Lambda
-  - Create `src/contexts/orchestration/handlers/feedback-aggregator.ts`: scheduled Lambda (hourly via EventBridge Scheduler)
-  - Query `feedback-index` table by category/module/riskLevel buckets (GSI queries)
-  - For each bucket: compute success rate, approval rate, average confidence, recent trend (last 10 vs prior 10)
-  - Derive guardrails using threshold rules from 14.6
-  - Identify common failure patterns (top 3 by frequency) and success patterns (top 3)
-  - Write/overwrite FeedbackSummary to `feedback-summaries` DynamoDB table
-  - Publish `feedback.summary-updated` event
-  - Handle partial failures: if one bucket fails, continue with others, log errors
-  - Alert after 3 consecutive full-run failures
+  - **RED**: Write tests: (1) aggregator computes success rate correctly, (2) trend detection compares last 10 vs prior 10 entries, (3) guardrails derived correctly (5 consecutive failures → ceiling 40), (4) partial bucket failure continues with others, (5) 3 consecutive full-run failures triggers alert, (6) summary is written to DynamoDB, (7) `feedback.summary-updated` event published
+  - **GREEN**: Create `src/contexts/orchestration/handlers/feedback-aggregator.ts`: scheduled Lambda (hourly). Query feedback-index by bucket. Compute stats, derive guardrails, identify patterns. Write summaries. Publish event. Handle partial failures.
+  - **REFACTOR**: Extract bucket computation into pure functions; ensure idempotent on re-run
   - _Design Spec: Sections 4.1, 4.3, 6_
 
 - [ ] 14.8 Implement IFeedbackProvider port and adapter
@@ -73,13 +63,9 @@
   - _Design Spec: Sections 5.2, 6_
 
 - [ ] 14.9 Modify Planning agent to integrate feedback context
-  - Modify `src/contexts/orchestration/domain/agents/planning.ts`:
-    - After receiving research results, call `IFeedbackProvider.getSummary()` for the work item's category/module/riskLevel
-    - If no summary (novel situation): call `IFeedbackProvider.queryFeedbackHistory()` as RAG fallback
-    - Inject feedback context into planning prompt (statistics, common failures, success patterns, OR RAG results for novel situations)
-    - After generating raw confidence: apply guardrail logic (cap at ceiling, boost to floor, force human review)
-    - Log ConfidenceAuditEntry (rawConfidence, adjustedConfidence, guardrailApplied, summaryUsed, ragFallback)
-  - Implement Steering doc override: check if team lead Steering doc specifies guardrail override, Steering wins
+  - **RED**: Write tests: (1) planning calls IFeedbackProvider.getSummary() with correct params, (2) feedback stats are injected into planning prompt, (3) guardrail ceiling caps confidence, (4) guardrail floor boosts confidence, (5) requiresHumanReview flag forces approval gate, (6) novel situation triggers RAG fallback, (7) Steering doc override wins over computed guardrail, (8) ConfidenceAuditEntry is logged with all fields
+  - **GREEN**: Modify `src/contexts/orchestration/domain/agents/planning.ts`: call IFeedbackProvider, inject feedback context, apply guardrails, log audit entry. Implement Steering doc override check.
+  - **REFACTOR**: Extract guardrail application into pure function; ensure audit logging doesn't affect return value
   - _Design Spec: Sections 5.1, 5.3, 5.4, 5.5_
 
 - [ ] 14.10 Implement confidence audit logging
@@ -88,19 +74,11 @@
   - Ensure audit trail captures all confidence adjustments
   - _Design Spec: Section 5.5_
 
-- [ ]* 14.11 Write property tests for feedback system
-  - **Property: Guardrail bounds** — adjusted confidence is always 0-100; ceiling >= floor when both exist (use fast-check with arbitrary summary inputs)
-  - **Property: Feedback completeness** — every outcome event (approved, rejected, succeeded, failed, verified) produces exactly one feedback entry
-  - **Property: Summary stability** — given same feedback dataset, aggregator always produces same summaries (deterministic)
+- [ ] 14.11 Write property tests for feedback system
+  - **RED**: Write fast-check property tests: (1) Guardrail bounds — adjusted confidence is always 0-100; ceiling >= floor when both exist, (2) Feedback completeness — every outcome event produces exactly one feedback entry, (3) Summary stability — given same dataset, aggregator always produces same summaries
+  - **GREEN**: Implement generators for summary inputs and outcome event sequences; run property tests and fix violations
+  - **REFACTOR**: Add edge case generators (empty datasets, single-entry buckets); validate boundary conditions
   - _Design Spec: Section 8.2_
-
-- [ ]* 14.12 Write unit tests for feedback system
-  - Test feedback capture: mapping from each event type to FeedbackEntry
-  - Test aggregator: success rate computation, trend detection, guardrail derivation
-  - Test guardrail logic: ceiling application, floor application, human review flag, invalid guardrail handling (ceiling < floor)
-  - Test IFeedbackProvider: summary lookup hit/miss, RAG fallback, timeout handling
-  - Test Planning agent integration: prompt injection format, confidence adjustment
-  - _Design Spec: Sections 6, 8.1_
 
 ---
 
@@ -112,7 +90,7 @@
 | 14.3, 14.4 | 6 |
 | 14.5, 14.6, 14.7 | 7 |
 | 14.8, 14.9, 14.10 | 7 |
-| 14.11, 14.12 | 8 |
+| 14.11 | 8 |
 
 ---
 

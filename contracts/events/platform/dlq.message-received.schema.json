@@ -1,0 +1,27 @@
+{
+  "title": "DLQMessageReceived",
+  "description": "Emitted when a message lands in a Dead Letter Queue",
+  "type": "object",
+  "required": ["version", "correlationId", "timestamp", "source", "detailType", "payload"],
+  "properties": {
+    "version": { "type": "string", "const": "1.0.0" },
+    "correlationId": { "type": "string", "format": "uuid" },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "source": { "type": "string", "const": "forgeadmin.platform" },
+    "detailType": { "type": "string", "const": "dlq.message-received" },
+    "payload": {
+      "type": "object",
+      "required": ["queueName", "messageId", "originalSource", "receivedAt"],
+      "properties": {
+        "queueName": { "type": "string", "minLength": 1 },
+        "messageId": { "type": "string", "minLength": 1 },
+        "originalSource": { "type": "string" },
+        "receivedAt": { "type": "string", "format": "date-time" },
+        "errorMessage": { "type": "string" },
+        "retryCount": { "type": "integer", "minimum": 0 }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

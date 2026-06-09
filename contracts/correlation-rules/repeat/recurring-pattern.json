@@ -1,0 +1,19 @@
+{
+  "id": "repeat-recurring-pattern",
+  "name": "Recurring Pattern",
+  "type": "repeat",
+  "description": "Detects items matching historical patterns — same category and error code with fuzzy similarity",
+  "matchAttributes": [
+    { "field": "category", "matchType": "exact" },
+    { "field": "metadata.errorCode", "matchType": "fuzzy", "threshold": 0.8 }
+  ],
+  "window": {
+    "gapSeconds": 86400,
+    "maxDurationSeconds": 86400
+  },
+  "minItems": 2,
+  "action": "enrich",
+  "priority": 50,
+  "enabled": true,
+  "lookbackDays": 90
+}

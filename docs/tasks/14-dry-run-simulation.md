@@ -52,22 +52,15 @@
   - _Design Spec: Sections 3.2, 4.1, 4.4_
 
 - [ ] 15.5 Implement static analyzer
-  - Create `src/contexts/execution/domain/simulation/static-analyzer.ts`
-  - Parse plan steps: extract cmdlet name + parameters from command strings
-  - Look up each cmdlet in ICommandRegistry
-  - For known commands: generate PredictedChange entries (target, objectType, attribute, changeType, newValue, reversible)
-  - For unknown commands: mark step as `predictable: false`, add warning "unpredictable — manual review recommended"
-  - Calculate summary: totalSteps, predictableSteps, unpredictableSteps, totalChanges, riskAssessment (based on scope + reversibility)
-  - Handle parse failures: mark step as unpredictable, log error, continue with remaining steps
+  - **RED**: Write tests: (1) known command produces PredictedChange with target/attribute/changeType, (2) unknown command marks step as predictable=false with warning, (3) summary correctly counts predictable vs unpredictable steps, (4) parse failure marks step as unpredictable and continues, (5) risk assessment accounts for reversibility
+  - **GREEN**: Create `src/contexts/execution/domain/simulation/static-analyzer.ts`. Parse plan steps, look up in ICommandRegistry, generate predictions for known commands, mark unknown as unpredictable. Calculate summary.
+  - **REFACTOR**: Extract command parsing into testable utility; ensure summary calculation is deterministic
   - _Design Spec: Sections 4.4_
 
 - [ ] 15.6 Implement command registry adapter
-  - Create `src/contexts/execution/adapters/command-registry.ts`: implements ICommandRegistry
-  - Load JSON files from `contracts/command-registry/` at cold start
-  - Cache in Lambda execution context (warm starts benefit)
-  - Return CommandEffect for known cmdlets, null for unknown
-  - Handle malformed registry files: skip, log error, continue with valid entries
-  - Support Dashboard overrides: check DynamoDB for team lead additions first, fall back to JSON files
+  - **RED**: Write tests: (1) known cmdlet returns CommandEffect, (2) unknown cmdlet returns null, (3) malformed registry file is skipped with error logged, (4) Dashboard overrides take precedence over JSON files, (5) warm start uses cached registry
+  - **GREEN**: Create `src/contexts/execution/adapters/command-registry.ts`: implements ICommandRegistry. Load JSON files at cold start, cache in execution context. Return effect for known, null for unknown. Support Dashboard overrides.
+  - **REFACTOR**: Ensure cache invalidation on Dashboard override change; validate all registry files on load
   - _Design Spec: Sections 4.2_
 
 - [ ] 15.7 Implement diff generator
@@ -79,14 +72,9 @@
   - _Design Spec: Sections 3.2_
 
 - [ ] 15.8 Implement live prober
-  - Create `src/contexts/execution/domain/simulation/live-prober.ts`
-  - For each plan step with a known command: look up probeCommands from registry
-  - Build list of read-only commands to execute on jump server
-  - Execute via read-only bridge (separate mTLS cert + endpoint)
-  - Parse command output into structured state (attribute → current value)
-  - Compare against plan's expected pre-state using diff-generator
-  - Generate warnings for mismatches ("Target CN=jsmith not found", "Attribute LockedOut is False, plan expects True")
-  - Implement 30-second timeout: return partial results for completed steps
+  - **RED**: Write tests: (1) known command probe executes read-only commands on bridge, (2) state mismatch generates warning, (3) 30-second timeout returns partial results, (4) unknown commands are skipped, (5) target not found generates warning
+  - **GREEN**: Create `src/contexts/execution/domain/simulation/live-prober.ts`. Look up probeCommands from registry. Execute via read-only bridge. Parse output. Compare against expected state. Generate warnings for mismatches.
+  - **REFACTOR**: Extract state comparison logic; ensure timeout handling returns whatever is already collected
   - _Design Spec: Sections 5.1, 5.3_
 
 - [ ] 15.9 Implement read-only bridge adapter
@@ -123,19 +111,11 @@
   - Add Zustand store slice: `simulation` with previews and probe results per planId
   - _Design Spec: Sections 6.1, 6.2_
 
-- [ ]* 15.13 Write property tests for simulation
-  - **Property: Step completeness** — every plan step produces exactly one StepPreview entry (no loss or duplication, use fast-check with arbitrary plan step sequences)
-  - **Property: Graceful unknowns** — plans with unknown commands still produce valid SimulationResult with predictable=false on unknown steps
-  - **Property: Registry consistency** — every command in registry has both write cmdlet and corresponding probe commands defined
+- [ ] 15.13 Write property tests for simulation
+  - **RED**: Write fast-check property tests: (1) Step completeness — every plan step produces exactly one StepPreview entry, (2) Graceful unknowns — plans with unknown commands still produce valid SimulationResult, (3) Registry consistency — every command in registry has both write cmdlet and probe commands
+  - **GREEN**: Implement generators for plan step sequences and registry entries; run property tests and fix violations
+  - **REFACTOR**: Add generators for mixed known/unknown command plans; validate no data loss
   - _Design Spec: Section 10.2_
-
-- [ ]* 15.14 Write unit tests for simulation system
-  - Test static analyzer: known command parsing, unknown command handling, parameter extraction
-  - Test command registry: loading, caching, malformed file handling, Dashboard override merging
-  - Test diff generator: static diffs, live probe comparison, missing attribute handling
-  - Test live prober: timeout handling, partial results, connection failure
-  - Test handlers: concurrent probe rejection (409), static analysis < 10s guarantee
-  - _Design Spec: Section 10.1_
 
 ---
 
@@ -147,7 +127,7 @@
 | 15.2, 15.3 | 5 |
 | 15.4, 15.5, 15.6, 15.7 | 5 |
 | 15.8, 15.9, 15.10 | 6 |
-| 15.11, 15.13, 15.14 | 7 |
+| 15.11, 15.13 | 7 |
 | 15.12 | 9 |
 
 ---

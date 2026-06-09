@@ -1,0 +1,18 @@
+{
+  "id": "infra-same-rack-alerts",
+  "name": "Same Rack Alerts",
+  "type": "infrastructure",
+  "description": "Groups alerts from servers in the same rack with matching alert types — likely hardware/network issue at rack level",
+  "matchAttributes": [
+    { "field": "metadata.serverRack", "matchType": "exact" },
+    { "field": "metadata.alertType", "matchType": "exact" }
+  ],
+  "window": {
+    "gapSeconds": 600,
+    "maxDurationSeconds": 3600
+  },
+  "minItems": 2,
+  "action": "enrich",
+  "priority": 20,
+  "enabled": true
+}

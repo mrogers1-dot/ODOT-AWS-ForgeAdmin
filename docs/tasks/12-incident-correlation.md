@@ -49,48 +49,33 @@
   - _Design Spec: Sections 3.1, 4.1_
 
 - [ ] 13.5 Implement rule evaluator engine
-  - Create `src/contexts/correlation/domain/engine/rule-evaluator.ts`
-  - Load active rules from IRuleProvider, sort by priority (lower = first)
-  - Evaluate incoming work item against each rule in order
-  - Implement exact match logic: compare item field values against rule match attributes
-  - Implement fuzzy match logic: similarity scoring with configurable threshold (0-1)
-  - First matching rule wins — return matched rule or null
-  - Handle malformed rules gracefully: skip, log error, continue with remaining rules
+  - **RED**: Write tests: (1) exact match correctly identifies matching rule, (2) fuzzy match with threshold 0.8 matches similar strings, (3) rules are evaluated in priority order (lower = first), (4) first matching rule wins, (5) malformed rule is skipped with error logged, (6) no matching rule returns null
+  - **GREEN**: Create `src/contexts/correlation/domain/engine/rule-evaluator.ts`. Load active rules from IRuleProvider, sort by priority. Evaluate incoming work item against each rule. Implement exact match and fuzzy match logic. First matching rule wins. Handle malformed rules gracefully.
+  - **REFACTOR**: Extract match strategies into pluggable functions; ensure priority sort is stable
   - _Design Spec: Sections 4.1, 4.3, 6_
 
 - [ ] 13.6 Implement session manager
-  - Create `src/contexts/correlation/domain/engine/session-manager.ts`
-  - On rule match: check ISessionStore for open session with same ruleId + matchKey
-  - If open session exists: add item, reset gap timer (update EventBridge Scheduler)
-  - If no open session: create new session, add item, create gap timer schedule
-  - Implement matchKey generation: composite key from matched rule attributes
-  - Enforce maxDuration hard cap: close session regardless of activity if openedAt + maxDuration reached
-  - Handle session store unavailability: pass item through as `work-item.correlated` with no group context
+  - **RED**: Write tests: (1) rule match with no open session creates new session, (2) rule match with open session adds item and resets gap timer, (3) matchKey is composite of rule attributes, (4) maxDuration hard cap closes session regardless of activity, (5) session store unavailability passes item through with no group context
+  - **GREEN**: Create `src/contexts/correlation/domain/engine/session-manager.ts`. On rule match: check for open session with same ruleId + matchKey. If open: add item, reset gap timer. If none: create new session, add item, create gap timer. Implement matchKey generation. Enforce maxDuration hard cap. Handle store unavailability gracefully.
+  - **REFACTOR**: Extract timer management into testable utility; ensure concurrent access is safe
   - _Design Spec: Sections 5.1, 5.3_
 
 - [ ] 13.7 Implement group finalizer
-  - Create `src/contexts/correlation/domain/engine/group-finalizer.ts`
-  - On session close: evaluate item count against rule's minItems threshold
-  - If items >= minItems: form CorrelationGroup, synthesize parent work item (for merge actions), publish `correlation-group.detected`
-  - If items < minItems: dissolve session, publish individual `work-item.correlated` for each member as passthrough
-  - For enrich actions: publish `work-item.correlated` for each member with correlationContext populated
-  - Generate `suggestedRootCause` string from matched rule + member item patterns
+  - **RED**: Write tests: (1) session with items >= minItems forms CorrelationGroup, (2) merge action synthesizes parent work item, (3) session with items < minItems dissolves and publishes individual passthrough events, (4) enrich action publishes enriched events for each member, (5) `correlation-group.detected` event is published on group formation, (6) suggestedRootCause string is generated
+  - **GREEN**: Create `src/contexts/correlation/domain/engine/group-finalizer.ts`. On session close: evaluate count against minItems. If >= minItems: form group, synthesize parent (for merge), publish event. If < minItems: dissolve, publish individual passthroughs. For enrich: publish enriched events. Generate suggestedRootCause.
+  - **REFACTOR**: Extract parent work item synthesis logic; ensure event publishing is atomic (all-or-nothing)
   - _Design Spec: Sections 5.1, 5.4_
 
 - [ ] 13.8 Implement adapters
-  - Create `src/contexts/correlation/adapters/dynamodb-session-store.ts`: implements ISessionStore using `correlation-sessions` table with GSI queries
-  - Create `src/contexts/correlation/adapters/rule-provider.ts`: implements IRuleProvider, loads code defaults from JSON + DynamoDB overrides, merges with priority (dashboard overrides code)
-  - Create `src/contexts/correlation/adapters/eventbridge-publisher.ts`: implements IEventPublisher, validates events against schema before publishing
-  - Create `src/contexts/correlation/adapters/dynamodb-history-lookup.ts`: implements IHistoryLookup for ≤90 day repeat detection (DynamoDB query by category + errorCode)
-  - Create `src/contexts/correlation/adapters/s3-history-lookup.ts`: implements IHistoryLookup for >90 day repeat detection (async S3 query, non-blocking)
+  - **RED**: Write tests: (1) DynamoDB session store creates/reads/updates sessions correctly, (2) rule provider merges code defaults with Dashboard overrides (dashboard wins), (3) EventBridge publisher validates events against schema, (4) DynamoDB history lookup returns items within 90-day window, (5) S3 history lookup handles async non-blocking query
+  - **GREEN**: Create adapters for session store, rule provider, event publisher, DynamoDB history, S3 history.
+  - **REFACTOR**: Extract common DynamoDB patterns; ensure non-blocking behavior in S3 lookup
   - _Design Spec: Sections 3.1, 4.3, 5.2_
 
 - [ ] 13.9 Implement Lambda handlers
-  - Create `src/contexts/correlation/handlers/on-work-item-created.ts`: SQS trigger (buffered from EventBridge), wires rule evaluator → session manager → event publishing. Handles no-match passthrough.
-  - Create `src/contexts/correlation/handlers/on-session-expired.ts`: EventBridge Scheduler callback, checks if session was extended since schedule was set, calls group finalizer if truly expired
-  - Create `src/contexts/correlation/handlers/on-rule-updated.ts`: EventBridge trigger on Dashboard rule changes, invalidates any cached rules in Lambda execution context
-  - Create sweeper Lambda (EventBridge scheduled, every 5 minutes): scans for sessions past maxExpiresAt and force-closes them (fallback for scheduler failures)
-  - Apply structured logging with correlationId and X-Ray tracing on all handlers
+  - **RED**: Write tests: (1) on-work-item-created evaluates rules and publishes enriched event, (2) no-match passthrough publishes unenriched event, (3) on-session-expired checks extension and calls finalizer, (4) scheduler callback is idempotent, (5) sweeper closes sessions past maxExpiresAt
+  - **GREEN**: Create `src/contexts/correlation/handlers/on-work-item-created.ts`: SQS trigger, wires evaluator → session manager → publishing. Create `src/contexts/correlation/handlers/on-session-expired.ts`: scheduler callback. Create `src/contexts/correlation/handlers/on-rule-updated.ts`: invalidates cached rules. Create sweeper Lambda (every 5 minutes). Apply structured logging with correlationId and X-Ray tracing.
+  - **REFACTOR**: Ensure handlers are thin wiring layers; extract orchestration logic into domain
   - _Design Spec: Sections 3.1, 5.1, 5.3, 6_
 
 - [ ] 13.10 Implement fallback routing rule for graceful degradation
@@ -117,19 +102,11 @@
   - Integrate WebSocket subscription for `correlation-group.detected` and `correlation-group.updated` events
   - _Design Spec: Section 7.1_
 
-- [ ]* 13.13 Write property tests for Correlation engine
-  - **Property: Session determinism** — given same sequence of work items and rules, engine always produces same groups (use fast-check to generate arbitrary item sequences)
-  - **Property: Rule isolation** — an item can join at most one session; no item appears in multiple groups
-  - **Property: Graceful passthrough** — if rules are empty or engine errors, every item still produces exactly one `work-item.correlated` event
+- [ ] 13.13 Write property tests for Correlation engine
+  - **RED**: Write fast-check property tests: (1) Session determinism — given same sequence of work items and rules, engine always produces same groups, (2) Rule isolation — an item can join at most one session; no item appears in multiple groups, (3) Graceful passthrough — if rules are empty or engine errors, every item still produces exactly one `work-item.correlated` event
+  - **GREEN**: Implement generators for work item sequences and rule sets; run property tests and fix violations
+  - **REFACTOR**: Add shrinking for minimal failing cases; cover edge cases (empty inputs, single-item groups)
   - _Design Spec: Section 9.2_
-
-- [ ]* 13.14 Write unit tests for Correlation context
-  - Test rule evaluator: exact match, fuzzy match, priority ordering, malformed rule handling
-  - Test session manager: new session creation, item joining, gap timer reset, maxDuration cap
-  - Test group finalizer: minItems threshold, merge vs enrich action, session dissolution
-  - Test adapters: rule merging (code + dashboard), history lookup hot/cold paths
-  - Test handlers: passthrough on no match, scheduler callback idempotency
-  - _Design Spec: Sections 6, 9.1_
 
 ---
 
@@ -142,7 +119,7 @@
 | 13.4 | 4 |
 | 13.5, 13.6, 13.7 | 5 |
 | 13.8, 13.9, 13.10 | 6 |
-| 13.11, 13.13, 13.14 | 7 |
+| 13.11, 13.13 | 7 |
 | 13.12 | 9 |
 
 ---

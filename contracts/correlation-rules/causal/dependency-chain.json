@@ -1,0 +1,17 @@
+{
+  "id": "causal-dependency-chain",
+  "name": "Dependency Chain",
+  "type": "causal",
+  "description": "Groups alerts on the same affected service arriving in temporal order — likely cascading failure",
+  "matchAttributes": [
+    { "field": "affectedSystem", "matchType": "exact" }
+  ],
+  "window": {
+    "gapSeconds": 300,
+    "maxDurationSeconds": 1800
+  },
+  "minItems": 2,
+  "action": "merge",
+  "priority": 15,
+  "enabled": true
+}

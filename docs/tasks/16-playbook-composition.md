@@ -31,13 +31,9 @@
   - _Design Spec: Sections 3.1, 6.2_
 
 - [ ] 17.4 Implement playbook validation logic
-  - Create `src/contexts/knowledge-base/handlers/playbook-validation.ts`
-  - Circular reference detection: build directed graph of playbook → nested playbook references, DFS for cycles
-  - Nesting depth check: recursively expand playbook refs, error if any path exceeds 3 levels
-  - Runbook existence check: verify all referenced runbookIds exist and are active in KB
-  - Parameter completeness: verify all required parameters of referenced runbooks/playbooks are mapped
-  - Return validation result with specific error messages for each violation
-  - Called synchronously before save (both API create and API update)
+  - **RED**: Write tests: (1) circular reference A→B→A detected, (2) nesting depth > 3 rejected, (3) missing runbook reference rejected, (4) incomplete parameter mapping rejected, (5) valid playbook passes all checks, (6) specific error messages returned for each violation type
+  - **GREEN**: Create `src/contexts/knowledge-base/handlers/playbook-validation.ts`. Circular reference detection (DFS). Nesting depth check. Runbook existence check. Parameter completeness check. Return validation result with error messages.
+  - **REFACTOR**: Extract graph traversal into reusable utility; ensure error messages include path to violation
   - _Design Spec: Sections 5.2, 8_
 
 - [ ] 17.5 Implement playbook query handler
@@ -75,25 +71,15 @@
   - _Design Spec: Sections 4.2, 4.3, 4.4_
 
 - [ ] 17.9 Implement playbook expansion in Execution context
-  - Create `src/contexts/execution/domain/playbook-expander.ts`:
-    - Input: plan with `playbook-ref` steps
-    - For each playbook-ref: fetch playbook from KB, resolve version (latest or pinned), substitute parameterValues into step commands
-    - Recursively expand nested playbook references (respect max 3 depth)
-    - Output: flat plan with all steps numbered hierarchically (2.1, 2.2, 2.3 for steps within a playbook)
-    - Preserve onFailure conditional logic per expanded step
-    - Handle expansion failures (deleted runbook, missing playbook): halt with clear error message
-  - Modify `src/contexts/execution/domain/execution-orchestrator.ts`: call playbook-expander after approval, before execution begins
+  - **RED**: Write tests: (1) simple playbook-ref expands to flat steps, (2) nested playbook-ref expands recursively (max 3 deep), (3) parameters are substituted correctly, (4) version "latest" resolves to currentVersion, (5) deleted runbook halts with clear error, (6) hierarchical step numbering (2.1, 2.2, 2.3), (7) onFailure logic preserved per expanded step
+  - **GREEN**: Create `src/contexts/execution/domain/playbook-expander.ts`. Fetch playbook, resolve version, substitute params, recursively expand nested refs, output flat plan with hierarchical numbering. Handle expansion failures.
+  - **REFACTOR**: Ensure expansion is pure (no side effects); extract version resolution logic
   - _Design Spec: Sections 5.1, 5.2, 5.3_
 
 - [ ] 17.10 Implement conditional logic execution in Execution context
-  - Modify `src/contexts/execution/domain/execution-orchestrator.ts`:
-    - On step failure, evaluate step's onFailure action:
-      - `halt`: stop playbook execution, mark playbook as failed
-      - `alternative`: execute alternative runbook/playbook, then resume at specified step
-      - `skip-to`: jump to specified step number, continue from there
-      - `continue`: log failure, proceed to next step
-    - `notifyOnFailure`: if true, publish notification event for Communication context
-    - If all conditional paths within a playbook exhaust: escalate to plan-level failure (existing halt logic)
+  - **RED**: Write tests: (1) step failure with onFailure=halt stops playbook, (2) onFailure=alternative executes alternative and resumes at specified step, (3) onFailure=skip-to jumps to correct step, (4) onFailure=continue logs failure and proceeds, (5) notifyOnFailure=true publishes notification, (6) all conditional paths exhausted escalates to plan-level failure
+  - **GREEN**: Modify `src/contexts/execution/domain/execution-orchestrator.ts`: evaluate onFailure action on step failure. Implement halt, alternative, skip-to, continue actions. Handle notification flag. Escalate when all paths exhaust.
+  - **REFACTOR**: Extract conditional logic into strategy pattern; ensure step counter tracks correctly through jumps
   - _Design Spec: Section 5.3_
 
 - [ ] 17.11 Implement pattern detection for playbook suggestions
@@ -150,19 +136,10 @@
   - Add Zustand store slice: `playbooks` with list, editor state, suggestions, usage data
   - _Design Spec: Sections 7.1, 7.2, 7.3, 7.4_
 
-- [ ]* 17.15 Write property tests for playbook system
-  - **Property: Expansion completeness** — after expansion, no `playbook-ref` type steps remain in the output (fast-check with arbitrary playbook graph structures)
-  - **Property: Circular reference detection** — validator catches all cycles in arbitrary playbook graphs (generate random DAGs with cycles injected)
-  - **Property: Nesting depth enforcement** — expansion never exceeds 3 levels regardless of playbook structure
-  - **Property: Parameter resolution** — all required parameters are resolved after expansion (no unsubstituted placeholders)
-  - _Design Spec: Section 11_
-
-- [ ]* 17.16 Write unit tests for playbook system
-  - Test validation: circular refs caught, nesting depth enforced, missing runbooks detected, parameter completeness checked
-  - Test expansion: simple playbook, nested playbook, parameter substitution, version resolution (latest vs pinned)
-  - Test conditional logic: halt behavior, alternative execution and resume, skip-to navigation, continue on failure
-  - Test pattern detection: frequency counting, overlap filtering, suggestion generation, threshold respect
-  - Test API: CRUD operations, RBAC enforcement, version creation, deprecation
+- [ ] 17.15 Write property tests for playbook system
+  - **RED**: Write fast-check property tests: (1) Expansion completeness — after expansion, no `playbook-ref` steps remain, (2) Circular reference detection — validator catches all cycles, (3) Nesting depth enforcement — expansion never exceeds 3 levels, (4) Parameter resolution — all required parameters are resolved after expansion
+  - **GREEN**: Implement generators for playbook graph structures with cycles injected; run property tests and fix violations
+  - **REFACTOR**: Add generators for deeply nested structures; validate graceful handling of impossible expansions
   - _Design Spec: Section 11_
 
 ---
@@ -175,7 +152,7 @@
 | 17.3, 17.4, 17.5, 17.6 | 6 |
 | 17.7, 17.8, 17.9, 17.10 | 7 |
 | 17.11, 17.12, 17.13 | 8 |
-| 17.14, 17.15, 17.16 | 9 |
+| 17.14, 17.15 | 9 |
 
 ---
 

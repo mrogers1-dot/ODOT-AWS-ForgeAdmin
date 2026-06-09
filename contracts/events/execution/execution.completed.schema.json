@@ -1,0 +1,26 @@
+{
+  "title": "ExecutionCompleted",
+  "description": "Emitted when an execution plan completes all steps successfully",
+  "type": "object",
+  "required": ["version", "correlationId", "timestamp", "source", "detailType", "payload"],
+  "properties": {
+    "version": { "type": "string", "const": "1.0.0" },
+    "correlationId": { "type": "string", "format": "uuid" },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "source": { "type": "string", "const": "forgeadmin.execution" },
+    "detailType": { "type": "string", "const": "execution.completed" },
+    "payload": {
+      "type": "object",
+      "required": ["workItemId", "planId", "completedAt", "stepsExecuted"],
+      "properties": {
+        "workItemId": { "type": "string", "format": "uuid" },
+        "planId": { "type": "string", "format": "uuid" },
+        "completedAt": { "type": "string", "format": "date-time" },
+        "stepsExecuted": { "type": "integer", "minimum": 1 },
+        "durationMs": { "type": "integer", "minimum": 0 }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,26 @@
+{
+  "title": "SkillUpdated",
+  "description": "Emitted when a skill definition is created, updated, or deleted",
+  "type": "object",
+  "required": ["version", "correlationId", "timestamp", "source", "detailType", "payload"],
+  "properties": {
+    "version": { "type": "string", "const": "1.0.0" },
+    "correlationId": { "type": "string", "format": "uuid" },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "source": { "type": "string", "const": "forgeadmin.dashboard" },
+    "detailType": { "type": "string", "const": "skill.updated" },
+    "payload": {
+      "type": "object",
+      "required": ["skillId", "action", "updatedBy"],
+      "properties": {
+        "skillId": { "type": "string", "minLength": 1 },
+        "action": { "type": "string", "enum": ["created", "updated", "deleted"] },
+        "updatedBy": { "type": "string", "minLength": 1 },
+        "updatedAt": { "type": "string", "format": "date-time" },
+        "version": { "type": "integer", "minimum": 1 }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

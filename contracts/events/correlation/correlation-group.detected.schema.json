@@ -1,0 +1,27 @@
+{
+  "title": "CorrelationGroupDetected",
+  "description": "Emitted when a correlation group is formed from multiple related work items",
+  "type": "object",
+  "required": ["version", "correlationId", "timestamp", "source", "detailType", "payload"],
+  "properties": {
+    "version": { "type": "string", "const": "1.0.0" },
+    "correlationId": { "type": "string", "format": "uuid" },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "source": { "type": "string", "const": "forgeadmin.correlation" },
+    "detailType": { "type": "string", "const": "correlation-group.detected" },
+    "payload": {
+      "type": "object",
+      "required": ["groupId", "ruleId", "action", "memberItems"],
+      "properties": {
+        "groupId": { "type": "string", "format": "uuid" },
+        "ruleId": { "type": "string", "minLength": 1 },
+        "action": { "type": "string", "enum": ["merge", "enrich"] },
+        "memberItems": { "type": "array", "items": { "type": "string", "format": "uuid" }, "minItems": 2 },
+        "parentWorkItem": { "type": "string", "format": "uuid" },
+        "suggestedRootCause": { "type": "string" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,26 @@
+{
+  "title": "RunbookGenerated",
+  "description": "Emitted when a new runbook is generated from a resolved work item",
+  "type": "object",
+  "required": ["version", "correlationId", "timestamp", "source", "detailType", "payload"],
+  "properties": {
+    "version": { "type": "string", "const": "1.0.0" },
+    "correlationId": { "type": "string", "format": "uuid" },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "source": { "type": "string", "const": "forgeadmin.knowledge-base" },
+    "detailType": { "type": "string", "const": "runbook.generated" },
+    "payload": {
+      "type": "object",
+      "required": ["runbookId", "workItemId", "title", "generatedAt"],
+      "properties": {
+        "runbookId": { "type": "string", "format": "uuid" },
+        "workItemId": { "type": "string", "format": "uuid" },
+        "title": { "type": "string", "minLength": 1 },
+        "generatedAt": { "type": "string", "format": "date-time" },
+        "category": { "type": "string" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

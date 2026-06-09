@@ -1,0 +1,28 @@
+{
+  "title": "AuditEntryCreated",
+  "description": "Emitted when a new audit trail entry is recorded",
+  "type": "object",
+  "required": ["version", "correlationId", "timestamp", "source", "detailType", "payload"],
+  "properties": {
+    "version": { "type": "string", "const": "1.0.0" },
+    "correlationId": { "type": "string", "format": "uuid" },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "source": { "type": "string", "const": "forgeadmin.platform" },
+    "detailType": { "type": "string", "const": "audit.entry-created" },
+    "payload": {
+      "type": "object",
+      "required": ["entryId", "actor", "action", "context", "recordedAt"],
+      "properties": {
+        "entryId": { "type": "string", "format": "uuid" },
+        "actor": { "type": "string", "minLength": 1 },
+        "action": { "type": "string", "minLength": 1 },
+        "context": { "type": "string", "minLength": 1 },
+        "recordedAt": { "type": "string", "format": "date-time" },
+        "resourceId": { "type": "string" },
+        "details": { "type": "object", "additionalProperties": true }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

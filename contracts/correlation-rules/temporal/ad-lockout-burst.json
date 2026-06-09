@@ -1,0 +1,18 @@
+{
+  "id": "temporal-ad-lockout-burst",
+  "name": "AD Lockout Burst",
+  "type": "temporal",
+  "description": "Groups multiple AD account lockouts from the same OU within a short window — likely a single root cause",
+  "matchAttributes": [
+    { "field": "category", "matchType": "exact" },
+    { "field": "metadata.sourceOU", "matchType": "exact" }
+  ],
+  "window": {
+    "gapSeconds": 300,
+    "maxDurationSeconds": 1800
+  },
+  "minItems": 3,
+  "action": "merge",
+  "priority": 10,
+  "enabled": true
+}

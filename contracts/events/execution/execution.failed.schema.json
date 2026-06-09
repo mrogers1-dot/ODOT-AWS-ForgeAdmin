@@ -1,0 +1,27 @@
+{
+  "title": "ExecutionFailed",
+  "description": "Emitted when an execution plan fails at any step",
+  "type": "object",
+  "required": ["version", "correlationId", "timestamp", "source", "detailType", "payload"],
+  "properties": {
+    "version": { "type": "string", "const": "1.0.0" },
+    "correlationId": { "type": "string", "format": "uuid" },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "source": { "type": "string", "const": "forgeadmin.execution" },
+    "detailType": { "type": "string", "const": "execution.failed" },
+    "payload": {
+      "type": "object",
+      "required": ["workItemId", "planId", "failedAtStep", "error", "failedAt"],
+      "properties": {
+        "workItemId": { "type": "string", "format": "uuid" },
+        "planId": { "type": "string", "format": "uuid" },
+        "failedAtStep": { "type": "integer", "minimum": 1 },
+        "error": { "type": "string", "minLength": 1 },
+        "failedAt": { "type": "string", "format": "date-time" },
+        "rollbackInitiated": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

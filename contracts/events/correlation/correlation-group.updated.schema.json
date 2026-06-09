@@ -1,0 +1,33 @@
+{
+  "title": "CorrelationGroupUpdated",
+  "description": "Emitted when a correlation group gains a member or a historical match is found",
+  "type": "object",
+  "required": ["version", "correlationId", "timestamp", "source", "detailType", "payload"],
+  "properties": {
+    "version": { "type": "string", "const": "1.0.0" },
+    "correlationId": { "type": "string", "format": "uuid" },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "source": { "type": "string", "const": "forgeadmin.correlation" },
+    "detailType": { "type": "string", "const": "correlation-group.updated" },
+    "payload": {
+      "type": "object",
+      "required": ["groupId", "updateType"],
+      "properties": {
+        "groupId": { "type": "string", "format": "uuid" },
+        "updateType": { "type": "string", "enum": ["member-added", "historical-match-found"] },
+        "addedItem": { "type": "string", "format": "uuid" },
+        "memberCount": { "type": "integer", "minimum": 1 },
+        "historicalMatch": {
+          "type": "object",
+          "properties": {
+            "matchedItemId": { "type": "string" },
+            "matchedAt": { "type": "string", "format": "date-time" },
+            "similarity": { "type": "number", "minimum": 0, "maximum": 1 }
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

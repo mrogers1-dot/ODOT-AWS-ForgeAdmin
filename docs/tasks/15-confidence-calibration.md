@@ -90,19 +90,10 @@
   - Cache filter selections in URL params for shareable links
   - _Design Spec: Sections 6.2_
 
-- [ ]* 16.10 Write property tests for calibration computation
-  - **Property: Brier score bounds** — always between 0 and 1 inclusive (fast-check with arbitrary confidence/outcome arrays)
-  - **Property: Band completeness** — output always contains exactly 5 CalibrationPoints (one per band)
-  - **Property: Deviation consistency** — deviation = predictedMean - actualSuccessRate for every point
-  - **Property: Alert monotonicity** — higher deviation produces same or higher severity
-  - _Design Spec: Section 8_
-
-- [ ]* 16.11 Write unit tests for calibration system
-  - Test Brier score calculation with known inputs/outputs
-  - Test calibration point computation: correct band assignment, empty bands handled
-  - Test alert threshold logic: info/warning/critical generation, 5-consecutive-failure detection
-  - Test weekly trend computation: correct week boundaries, rolling window
-  - Test API endpoints: filter handling, RBAC enforcement, dismiss behavior
+- [ ] 16.10 Write property tests for calibration computation
+  - **RED**: Write fast-check property tests: (1) Brier score bounds — always between 0 and 1 inclusive, (2) Band completeness — output always contains exactly 5 CalibrationPoints, (3) Deviation consistency — deviation = predictedMean - actualSuccessRate, (4) Alert monotonicity — higher deviation produces same or higher severity
+  - **GREEN**: Implement generators for confidence/outcome arrays and calibration inputs; run property tests and fix violations
+  - **REFACTOR**: Add edge case generators (empty bands, all-success, all-failure); validate threshold boundaries
   - _Design Spec: Section 8_
 
 ---
@@ -114,7 +105,7 @@
 | 16.1, 16.2 | 7 |
 | 16.3, 16.4, 16.5 | 8 |
 | 16.6, 16.7, 16.8, 16.9 | 9 |
-| 16.10, 16.11 | 8 |
+| 16.10 | 8 |
 
 ---
 

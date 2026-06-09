@@ -1,0 +1,36 @@
+{
+  "title": "WorkItemCorrelated",
+  "description": "Emitted when a work item passes through correlation engine (enriched or passthrough)",
+  "type": "object",
+  "required": ["version", "correlationId", "timestamp", "source", "detailType", "payload"],
+  "properties": {
+    "version": { "type": "string", "const": "1.0.0" },
+    "correlationId": { "type": "string", "format": "uuid" },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "source": { "type": "string", "const": "forgeadmin.correlation" },
+    "detailType": { "type": "string", "const": "work-item.correlated" },
+    "payload": {
+      "type": "object",
+      "required": ["workItemId", "sourceSystem", "originalId", "title"],
+      "properties": {
+        "workItemId": { "type": "string", "format": "uuid" },
+        "sourceSystem": { "type": "string", "enum": ["servicenow", "email", "fortisiem"] },
+        "originalId": { "type": "string", "minLength": 1 },
+        "title": { "type": "string", "minLength": 1 },
+        "description": { "type": "string" },
+        "correlationContext": {
+          "type": "object",
+          "properties": {
+            "groupId": { "type": "string", "format": "uuid" },
+            "ruleMatched": { "type": "string" },
+            "action": { "type": "string", "enum": ["merge", "enrich", "passthrough"] },
+            "relatedItems": { "type": "array", "items": { "type": "string", "format": "uuid" } },
+            "historicalMatch": { "type": "boolean" }
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

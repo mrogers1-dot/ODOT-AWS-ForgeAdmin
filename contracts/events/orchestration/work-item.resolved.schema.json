@@ -1,0 +1,26 @@
+{
+  "title": "WorkItemResolved",
+  "description": "Emitted when a work item completes the full agent pipeline",
+  "type": "object",
+  "required": ["version", "correlationId", "timestamp", "source", "detailType", "payload"],
+  "properties": {
+    "version": { "type": "string", "const": "1.0.0" },
+    "correlationId": { "type": "string", "format": "uuid" },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "source": { "type": "string", "const": "forgeadmin.orchestration" },
+    "detailType": { "type": "string", "const": "work-item.resolved" },
+    "payload": {
+      "type": "object",
+      "required": ["workItemId", "resolution", "resolvedAt"],
+      "properties": {
+        "workItemId": { "type": "string", "format": "uuid" },
+        "resolution": { "type": "string", "enum": ["automated", "escalated", "rejected"] },
+        "resolvedAt": { "type": "string", "format": "date-time" },
+        "serviceNowTicketId": { "type": "string" },
+        "verificationResult": { "type": "string", "enum": ["pass", "fail", "partial"] }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

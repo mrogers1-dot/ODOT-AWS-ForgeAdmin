@@ -1,0 +1,27 @@
+{
+  "title": "ApprovalDecision",
+  "description": "Emitted when any approval decision is made (approve or reject)",
+  "type": "object",
+  "required": ["version", "correlationId", "timestamp", "source", "detailType", "payload"],
+  "properties": {
+    "version": { "type": "string", "const": "1.0.0" },
+    "correlationId": { "type": "string", "format": "uuid" },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "source": { "type": "string", "const": "forgeadmin.dashboard" },
+    "detailType": { "type": "string", "const": "approval.decision" },
+    "payload": {
+      "type": "object",
+      "required": ["workItemId", "planId", "decision", "decidedBy", "decidedAt"],
+      "properties": {
+        "workItemId": { "type": "string", "format": "uuid" },
+        "planId": { "type": "string", "format": "uuid" },
+        "decision": { "type": "string", "enum": ["approved", "rejected"] },
+        "decidedBy": { "type": "string", "minLength": 1 },
+        "decidedAt": { "type": "string", "format": "date-time" },
+        "reason": { "type": "string" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

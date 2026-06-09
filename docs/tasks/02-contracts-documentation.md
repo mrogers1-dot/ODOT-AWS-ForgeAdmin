@@ -8,7 +8,7 @@
 
 ## Tasks
 
-- [ ] 3.1 Define JSON Schema event contracts
+- [x] 3.1 Define JSON Schema event contracts
   - Create `contracts/events/ingestion/work-item.created.schema.json`
   - Create `contracts/events/orchestration/triage.completed.schema.json`
   - Create `contracts/events/orchestration/plan.proposed.schema.json`
@@ -28,13 +28,13 @@
   - All schemas must follow the EventEnvelope standard: source, detail-type, detail (version, correlationId, timestamp, payload)
   - _Requirements: 15.4_
 
-- [ ] 3.2 Create OpenAPI 3.1 specification for Dashboard API
+- [x] 3.2 Create OpenAPI 3.1 specification for Dashboard API
   - Create `contracts/api/openapi.yaml` defining all endpoints: GET/PATCH /modules, GET/POST /approvals, GET /executions, GET /audit, PATCH /modules/:id/config
   - Define request/response schemas, Cognito JWT security scheme, RBAC annotations
   - Include WebSocket API connection/subscription schemas
   - _Requirements: 11.1, 11.2, 11.3, 11.4, 11.5_
 
-- [ ] 3.3 Create contract validation utilities
+- [x] 3.3 Create contract validation utilities
   - Create `src/shared/contract-validator.ts`: JSON Schema validation utility for event publishing
   - Create `scripts/validate-contracts.ts`: CI script that validates all event schemas are valid JSON Schema and all OpenAPI specs pass linting
   - Add contract validation step to GitHub Actions PR workflow

@@ -1,0 +1,131 @@
+name: Terraform Deploy
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "terraform/**"
+
+permissions:
+  id-token: write
+  contents: read
+
+concurrency:
+  group: terraform-deploy
+  cancel-in-progress: false
+
+env:
+  AWS_REGION: us-east-2
+  TF_VAR_state_bucket: ${{ secrets.TF_STATE_BUCKET }}
+  TF_VAR_state_lock_table: ${{ secrets.TF_STATE_LOCK_TABLE }}
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    outputs:
+      has_changes: ${{ steps.plan.outputs.has_changes }}
+      has_destroys: ${{ steps.plan.outputs.has_destroys }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "~> 1.6"
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Terraform Plan — Foundation
+        id: plan
+        working-directory: terraform/foundation
+        run: |
+          terraform init -input=false
+          terraform plan -var-file=../environments/dev.tfvars -out=tfplan -input=false -detailed-exitcode || true
+
+          # Check for destroys/replacements
+          if terraform show -json tfplan | jq -e '.resource_changes[] | select(.change.actions | contains(["delete"]))' > /dev/null 2>&1; then
+            echo "has_destroys=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_destroys=false" >> "$GITHUB_OUTPUT"
+          fi
+          echo "has_changes=true" >> "$GITHUB_OUTPUT"
+
+      - name: Upload plan
+        uses: actions/upload-artifact@v4
+        with:
+          name: terraform-plan
+          path: terraform/foundation/tfplan
+
+  approval:
+    runs-on: ubuntu-latest
+    needs: plan
+    if: needs.plan.outputs.has_destroys == 'true'
+    environment: production-approval
+    steps:
+      - name: Manual approval for destructive changes
+        run: echo "Approved by reviewer"
+
+  apply:
+    runs-on: ubuntu-latest
+    needs: [plan, approval]
+    if: always() && needs.plan.result == 'success' && (needs.approval.result == 'success' || needs.approval.result == 'skipped')
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "~> 1.6"
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Deploy foundation
+        working-directory: terraform/foundation
+        run: |
+          terraform init -input=false
+          terraform apply -var-file=../environments/dev.tfvars -auto-approve -input=false
+
+      - name: Deploy contexts
+        run: |
+          for dir in terraform/contexts/*/; do
+            if [ -f "$dir/main.tf" ]; then
+              echo "Deploying: $dir"
+              cd "$dir"
+              terraform init -input=false
+              terraform apply -var-file=../../environments/dev.tfvars -auto-approve -input=false
+              cd - > /dev/null
+            fi
+          done
+
+  rollback:
+    runs-on: ubuntu-latest
+    needs: apply
+    if: failure()
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "~> 1.6"
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Revert to previous commit
+        run: git checkout HEAD~1 -- terraform/
+
+      - name: Re-apply previous state
+        working-directory: terraform/foundation
+        run: |
+          terraform init -input=false
+          terraform apply -var-file=../environments/dev.tfvars -auto-approve -input=false

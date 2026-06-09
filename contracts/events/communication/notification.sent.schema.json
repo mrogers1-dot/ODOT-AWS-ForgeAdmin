@@ -1,0 +1,27 @@
+{
+  "title": "NotificationSent",
+  "description": "Emitted when a notification is successfully delivered via any channel",
+  "type": "object",
+  "required": ["version", "correlationId", "timestamp", "source", "detailType", "payload"],
+  "properties": {
+    "version": { "type": "string", "const": "1.0.0" },
+    "correlationId": { "type": "string", "format": "uuid" },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "source": { "type": "string", "const": "forgeadmin.communication" },
+    "detailType": { "type": "string", "const": "notification.sent" },
+    "payload": {
+      "type": "object",
+      "required": ["notificationId", "channel", "recipient", "sentAt"],
+      "properties": {
+        "notificationId": { "type": "string", "format": "uuid" },
+        "channel": { "type": "string", "enum": ["teams", "slack", "email", "dashboard"] },
+        "recipient": { "type": "string", "minLength": 1 },
+        "sentAt": { "type": "string", "format": "date-time" },
+        "subject": { "type": "string" },
+        "workItemId": { "type": "string", "format": "uuid" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

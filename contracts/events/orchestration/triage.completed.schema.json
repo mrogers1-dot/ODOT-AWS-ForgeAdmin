@@ -1,0 +1,26 @@
+{
+  "title": "TriageCompleted",
+  "description": "Emitted when the Triage Agent completes classification of a work item",
+  "type": "object",
+  "required": ["version", "correlationId", "timestamp", "source", "detailType", "payload"],
+  "properties": {
+    "version": { "type": "string", "const": "1.0.0" },
+    "correlationId": { "type": "string", "format": "uuid" },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "source": { "type": "string", "const": "forgeadmin.orchestration" },
+    "detailType": { "type": "string", "const": "triage.completed" },
+    "payload": {
+      "type": "object",
+      "required": ["workItemId", "category", "riskLevel", "urgencyLevel", "justification"],
+      "properties": {
+        "workItemId": { "type": "string", "format": "uuid" },
+        "category": { "type": "string", "enum": ["account_service_request", "health_remediation", "security_alert", "knowledge_capture"] },
+        "riskLevel": { "type": "string", "enum": ["low", "medium", "high"] },
+        "urgencyLevel": { "type": "string", "enum": ["critical", "high", "normal", "low"] },
+        "justification": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

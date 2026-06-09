@@ -1,0 +1,26 @@
+{
+  "title": "PlanApproved",
+  "description": "Emitted when a team lead approves a proposed execution plan",
+  "type": "object",
+  "required": ["version", "correlationId", "timestamp", "source", "detailType", "payload"],
+  "properties": {
+    "version": { "type": "string", "const": "1.0.0" },
+    "correlationId": { "type": "string", "format": "uuid" },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "source": { "type": "string", "const": "forgeadmin.dashboard" },
+    "detailType": { "type": "string", "const": "plan.approved" },
+    "payload": {
+      "type": "object",
+      "required": ["workItemId", "planId", "approvedBy", "approvedAt"],
+      "properties": {
+        "workItemId": { "type": "string", "format": "uuid" },
+        "planId": { "type": "string", "format": "uuid" },
+        "approvedBy": { "type": "string", "minLength": 1 },
+        "approvedAt": { "type": "string", "format": "date-time" },
+        "comments": { "type": "string" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

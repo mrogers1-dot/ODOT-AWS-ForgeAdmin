@@ -1,0 +1,32 @@
+{
+  "$id": "https://forgeadmin.dot.ohio.gov/schemas/common/event-envelope",
+  "title": "EventEnvelope",
+  "description": "Shared definitions for the ForgeAdmin EventEnvelope standard. All cross-context events wrap their payload in this envelope.",
+  "$defs": {
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Semver schema version"
+    },
+    "correlationId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Unique correlation ID for distributed tracing"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp of event creation"
+    },
+    "source": {
+      "type": "string",
+      "pattern": "^forgeadmin\\.",
+      "description": "Source context (e.g. forgeadmin.ingestion)"
+    },
+    "detailType": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*(\\.[a-z][a-z0-9-]*)*$",
+      "description": "Event type identifier in dot notation"
+    }
+  }
+}

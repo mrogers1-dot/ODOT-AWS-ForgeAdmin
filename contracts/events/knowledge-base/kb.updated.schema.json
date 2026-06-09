@@ -1,0 +1,26 @@
+{
+  "title": "KBUpdated",
+  "description": "Emitted when the Knowledge Base is updated with new or modified content",
+  "type": "object",
+  "required": ["version", "correlationId", "timestamp", "source", "detailType", "payload"],
+  "properties": {
+    "version": { "type": "string", "const": "1.0.0" },
+    "correlationId": { "type": "string", "format": "uuid" },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "source": { "type": "string", "const": "forgeadmin.knowledge-base" },
+    "detailType": { "type": "string", "const": "kb.updated" },
+    "payload": {
+      "type": "object",
+      "required": ["itemId", "action", "updatedAt"],
+      "properties": {
+        "itemId": { "type": "string", "format": "uuid" },
+        "action": { "type": "string", "enum": ["added", "updated", "removed"] },
+        "updatedAt": { "type": "string", "format": "date-time" },
+        "category": { "type": "string" },
+        "title": { "type": "string" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}
