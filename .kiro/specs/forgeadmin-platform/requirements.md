@@ -135,7 +135,7 @@ ForgeAdmin is an agentic multi-agent Windows SysAdmin platform for the ODOT Wind
 1. WHEN a work item is successfully resolved, THE Documentation_Agent SHALL, within 5 minutes, generate a work note containing resolution summary, root cause, steps taken, and affected systems, and attach it to the corresponding ServiceNow incident
 2. WHEN a resolution addresses a knowledge gap that was previously identified by the Triage_Agent or Documentation_Agent as having no matching runbook, THE Documentation_Agent SHALL auto-generate a runbook from the resolution steps within 10 minutes of resolution; IF active processing requires additional time, THE Documentation_Agent SHALL continue generation beyond 10 minutes rather than failing
 3. THE Documentation_Agent SHALL produce runbooks containing: title, applicable incident types, prerequisites, step-by-step procedure, expected outcomes, and rollback steps
-4. THE Knowledge_Base SHALL contain a minimum of 3 auto-generated runbooks by the end of the POC period
+4. (See Requirement 16.2 — POC success criterion for minimum 3 auto-generated runbooks)
 5. WHEN a new runbook is generated, THE Documentation_Agent SHALL notify the Teams/Slack channel with a summary of no more than 200 characters and a link to the full runbook for team review
 6. IF the Documentation_Agent fails to attach a work note or generate a runbook due to a ServiceNow API error or timeout, THEN THE Documentation_Agent SHALL retry the operation up to 3 times at 30-second intervals and, if still unsuccessful, notify the Teams/Slack channel with an error indication regardless of whether the logging itself succeeds, and log the failure when the audit system is available
 
@@ -197,7 +197,7 @@ ForgeAdmin is an agentic multi-agent Windows SysAdmin platform for the ODOT Wind
 #### Acceptance Criteria
 
 1. THE ForgeAdmin SHALL maintain an append-only, tamper-evident audit trail of all actions including: agent decisions, human approvals, execution commands, results, and timestamps linked to ServiceNow tickets, with each audit entry written within 5 seconds of the action occurring and retained for a minimum of 365 days
-2. WHEN input data contains sensitive information (credentials, API keys, tokens, PII including names, SSNs, email addresses, and phone numbers, or secrets such as passwords and certificates), THE ForgeAdmin SHALL detect and redact sensitive data by replacing it with a redaction placeholder before sending content to the LLM, or route processing to on-prem resources if redaction would render the data unusable for resolution
+2. WHEN input data contains sensitive information (credentials, API keys, tokens, PII including names, SSNs, email addresses, and phone numbers, or secrets such as passwords and certificates), THE ForgeAdmin SHALL detect and redact sensitive data by replacing it with a redaction placeholder before sending content to the LLM; IF redaction would render the data unusable for resolution, THEN THE ForgeAdmin SHALL escalate the work item to a human operator with full context preserved on-prem (no LLM processing), log the escalation reason in the audit trail, and notify the Teams/Slack channel
 3. THE ForgeAdmin SHALL enforce Role-Based Access Control with at minimum two roles: team lead (full access to approvals, audit trail viewing, module configuration, and skill addition) and team member (access to approvals and audit trail viewing, but read-only access to module configuration and no access to skill addition)
 4. IF the error rate for a module's automated executions exceeds the configured threshold (default: 3 failures within a rolling 15-minute window), THEN THE ForgeAdmin SHALL trip the circuit breaker and halt all automated execution for that module; circuit breaker responses SHALL only be triggered by an actual trip event
 5. IF a circuit breaker trips, THEN THE ForgeAdmin SHALL route all affected work items to human operators and notify the Teams/Slack channel within 60 seconds of the trip event
@@ -208,7 +208,7 @@ ForgeAdmin is an agentic multi-agent Windows SysAdmin platform for the ODOT Wind
 
 #### Acceptance Criteria
 
-1. IF the Knowledge_Base becomes unavailable, THEN THE Research_Agent SHALL cap the Confidence_Score of any generated plan at 50, append a "KB unavailable" flag to the research results, and proceed with available context only
+1. IF the Knowledge_Base becomes unavailable, THEN THE Research_Agent SHALL append a "KB unavailable" flag to the research results and proceed with available context only; THE Planning_Agent SHALL cap the Confidence_Score of any generated plan at 50 when this flag is present
 2. IF the Transit_Gateway connection is lost, THEN THE Execution_Agent SHALL queue approved actions for a maximum of 60 minutes, retry connectivity at 30-second intervals, and notify operators of the delay within 60 seconds of connection loss; IF the queue exceeds 60 minutes without restored connectivity, THEN THE Execution_Agent SHALL escalate all queued items to human operators
 3. IF an individual agent fails, THEN THE Supervisor_Agent SHALL remove the failed agent from the processing pipeline only after a definitive failure has occurred (not preemptively based on health checks), reroute affected work items to human operators, continue processing with remaining agents, and log a degradation event including the failed agent identity and timestamp
 4. THE ForgeAdmin SHALL implement bulkhead isolation between modules so that one module's failure does not cascade to other modules
@@ -239,3 +239,22 @@ ForgeAdmin is an agentic multi-agent Windows SysAdmin platform for the ODOT Wind
 3. THE ForgeAdmin POC SHALL achieve an average satisfaction score of 4 or higher on a 1-to-5 scale from a minimum of 2 server team members as measured by a structured survey covering accuracy, time savings, and usability dimensions
 4. THE ForgeAdmin POC SHALL record a timestamped entry with actor identification and stage outcome at each workflow stage transition (ingestion, research, proposal, approval, execution, documentation) for every processed work item
 5. THE ForgeAdmin POC SHALL confirm Transit_Gateway routing with zero policy violations throughout the 6-to-10-week POC duration
+
+### Requirement 17: Agent Skills and Steering Documents
+
+**User Story:** As a Windows Server team lead, I want to add Skills and Steering documents to expand and fine-tune each agent's capabilities and behavior over time, so that the platform grows in competence just like a Junior SysAdmin gaining experience under mentorship.
+
+#### Acceptance Criteria
+
+1. THE Dashboard SHALL allow a team_lead to create, update, delete, enable, and disable Skill documents that expand an agent's capabilities through prompt instructions
+2. THE Dashboard SHALL allow a team_lead to create, update, delete, enable, and disable Steering documents that modify an agent's behavioral guidelines and decision-making rules
+3. WHEN a Skill or Steering document is created or updated, THE ForgeAdmin SHALL store the document with full version history and allow rollback to any prior version
+4. THE ForgeAdmin SHALL support two scoping levels for Skills and Steering documents: global (applying to all agents) and agent-specific (applying to a single named agent)
+5. WHEN an agent is invoked, THE ForgeAdmin SHALL compose the agent's prompt by injecting all enabled Skills and Steering documents applicable to that agent in priority order: base prompt → global steering → agent-specific steering → global skills → agent-specific skills
+6. WHEN a Skill or Steering document is created, updated, or rolled back, THE change SHALL take effect immediately on the agent's next invocation without requiring redeployment or restart
+7. IF the total composed prompt (base + steering + skills + runtime context) exceeds the model's context window, THEN THE ForgeAdmin SHALL drop lowest-priority documents first (global skills, then global steering) while preserving agent-specific documents, and log which documents were dropped
+8. IF the Skills/Steering storage becomes unavailable during agent invocation, THEN THE agent SHALL proceed with its base prompt only, log a warning, and flag the work item as "operating without full skill context"
+9. THE Dashboard SHALL display a token budget indicator showing how much of each agent's context window is consumed by active Skills and Steering documents
+10. WHEN a Skill or Steering document is created, updated, deleted, or rolled back, THE ForgeAdmin SHALL log the operation in the audit trail with team_lead identity, timestamp, document version, and action performed
+11. THE Dashboard SHALL restrict Skill and Steering document management (create, update, delete, rollback) to the team_lead role; team_member role SHALL have read-only access to view active documents
+12. WHEN a Skill or Steering document change occurs, THE ForgeAdmin SHALL notify the Teams/Slack channel within 30 seconds with the document title, target agent or scope, action performed, and acting team lead identity
