@@ -1,47 +1,13 @@
 # ForgeAdmin Context Map
 
-## Visual Map (ASCII)
-
-```
-                    ┌──────────────────────────────────────────┐
-                    │         PLATFORM FOUNDATION               │
-                    │  EventBridge │ VPC │ Cognito │ IAM       │
-                    └──────────────────────────────────────────┘
-                                       │
-                    ┌──────────────────────────────────────────┐
-                    │          EVENTBRIDGE BUS                   │
-                    │       (forgeadmin-events)                  │
-                    └──────────────────────────────────────────┘
-                      │        │        │        │        │        │
-    ┌─────────────────┼────────┼────────┼────────┼────────┼────────┼────────┐
-    │                 │        │        │        │        │        │        │
-    ▼                 ▼        ▼        ▼        ▼        ▼        ▼        ▼
-┌────────┐     ┌──────────┐┌────────┐┌────────┐┌────────┐┌────────────┐┌────────┐
-│INGESTION│     │ORCHESTR- ││EXECU-  ││KNOWL-  ││DASH-   ││COMMUNICA-  ││CORRELA-│
-│         │     │ATION     ││TION    ││EDGE    ││BOARD   ││TION        ││TION    │
-│ServiceNow│    │          ││        ││BASE    ││& API   ││            ││        │
-│Email     │────▶ Triage   ││On-prem ││        ││        ││Teams/Slack ││Rule    │
-│FortiSIEM │    │ Research ││bridge  ││Bedrock ││React   ││Email (SES) ││Evaluator│
-│          │    │ Planning ││SSM Run ││RAG     ││WebSock ││3-tier      ││Session │
-│          │    │ Verify   ││Command ││Feedback││Cognito ││escalation  ││Manager │
-│          │    │ Supervise││        ││        ││        ││            ││Grouping│
-└────────┘     └──────────┘└────────┘└────────┘└────────┘└────────────┘└────────┘
-                      │                  │                      │            │
-                      ▼                  ▼                      ▼            ▼
-               ┌──────────────────────────────────────────────────────────────┐
-               │                   PLATFORM SERVICES                           │
-               │  Audit Trail │ Circuit Breaker │ Archival │ DLQ │ Degradation │
-               └──────────────────────────────────────────────────────────────┘
-```
-
-## Visual Map (Mermaid)
+## Visual Map
 
 ```mermaid
 graph TB
     subgraph Foundation["Platform Foundation"]
         EB[EventBridge Bus<br/>forgeadmin-events]
         VPC[VPC]
-        Cognito[Cognito]
+        COG[Cognito]
         IAM[IAM]
     end
 

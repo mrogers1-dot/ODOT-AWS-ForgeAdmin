@@ -6,17 +6,48 @@ ForgeAdmin is an autonomous IT operations platform built for the Ohio Department
 
 ## Architecture
 
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                           EventBridge Bus                                     │
-│                        (forgeadmin-events)                                    │
-└─┬────────┬────────┬────────┬────────┬────────┬────────┬────────┬───────────┘
-  │        │        │        │        │        │        │        │
-  ▼        ▼        ▼        ▼        ▼        ▼        ▼        ▼
-┌────────┐┌────────┐┌────────┐┌────────┐┌────────┐┌────────┐┌────────┐┌────────┐
-│Ingestion││Orchestr││Execution││Knowledge││Correlat-││Dashboard││Communic││Platform│
-│        ││ation   ││        ││  Base  ││ion     ││  & API ││ation   ││Services│
-└────────┘└────────┘└────────┘└────────┘└────────┘└────────┘└────────┘└────────┘
+```mermaid
+graph TB
+    subgraph Foundation["Platform Foundation"]
+        EB[EventBridge Bus<br/>forgeadmin-events]
+        VPC[VPC + Transit Gateway]
+        COG[Cognito User Pools]
+        IAM[Shared IAM Roles]
+    end
+
+    subgraph Contexts["Bounded Contexts"]
+        ING[Ingestion<br/>ServiceNow / Email / FortiSIEM]
+        ORCH[Orchestration<br/>Triage → Research → Plan → Verify]
+        EXEC[Execution<br/>On-prem Bridge / mTLS / JEA]
+        KB[Knowledge Base<br/>Bedrock RAG / Runbooks / Feedback]
+        CORR[Correlation<br/>Rule Evaluator / Sessions / Groups]
+        DASH[Dashboard & API<br/>React SPA / WebSocket / RBAC]
+        COMM[Communication<br/>Teams / Slack / SES / 3-tier]
+    end
+
+    subgraph Platform["Platform Services"]
+        AUDIT[Audit Trail]
+        CB[Circuit Breaker]
+        DEG[Degradation Monitor]
+        ARCH[Archival — DynamoDB → S3]
+    end
+
+    ING -->|work-item.created| EB
+    EB -->|work-item.created| CORR
+    CORR -->|work-item.correlated| EB
+    EB -->|correlated| ORCH
+    ORCH -->|plan.proposed| EB
+    EB -->|plan.proposed| DASH
+    DASH -->|approval.decision| EB
+    EB -->|plan.approved| ORCH
+    ORCH ---|execute| EXEC
+    EXEC -->|execution.completed/failed| EB
+    EB -->|resolved| KB
+    ORCH -->|work-item.resolved| EB
+    EB -->|all events| AUDIT
+    CB -->|circuit-breaker.tripped| EB
+    EB -->|alerts| COMM
+    KB ---|query/feedback| ORCH
 ```
 
 ## Bounded Contexts
@@ -31,6 +62,11 @@ ForgeAdmin is an autonomous IT operations platform built for the Ohio Department
 | **Dashboard & API** | Human-in-the-loop approvals, real-time monitoring | React + Lambda |
 | **Communication** | Teams/Slack/email notifications with 3-tier escalation | Simple Lambda |
 | **Platform** | Observability, audit trail, circuit breaker, archival | Terraform + Lambda |
+
+## Detailed Architecture Diagrams
+
+- **[Complete System Map](./architecture/system-map.md)** — Full infrastructure, data flow, deployment, security, and feedback loop diagrams (Mermaid)
+- **[Context Map](./architecture/context-map.md)** — Event flows, cross-context relationships, and contract registry
 
 ## Key Design Decisions
 
