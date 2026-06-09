@@ -5,44 +5,44 @@
 ```mermaid
 graph TB
     subgraph Foundation["Platform Foundation"]
-        EB[EventBridge Bus<br/>forgeadmin-events]
-        VPC[VPC]
-        COG[Cognito]
-        IAM[IAM]
+        EB["EventBridge Bus - forgeadmin-events"]
+        VPC["VPC"]
+        COG["Cognito"]
+        IAM["IAM"]
     end
 
     subgraph Contexts["Bounded Contexts"]
-        ING[Ingestion<br/>ServiceNow / Email / FortiSIEM]
-        ORCH[Orchestration<br/>Triage → Research → Plan → Verify]
-        EXEC[Execution<br/>On-prem Bridge / SSM RunCommand]
-        KB[Knowledge Base<br/>Bedrock RAG / Runbooks]
-        CORR[Correlation<br/>Rule Evaluator / Session Manager]
-        DASH[Dashboard & API<br/>React SPA / WebSocket / Cognito]
-        COMM[Communication<br/>Teams / Slack / SES / 3-tier]
-        PLAT[Platform Services<br/>Audit / Circuit Breaker / Archival]
+        ING["Ingestion - ServiceNow, Email, FortiSIEM"]
+        ORCH["Orchestration - Triage, Research, Plan, Verify"]
+        EXEC["Execution - On-prem Bridge, SSM RunCommand"]
+        KB["Knowledge Base - Bedrock RAG, Runbooks"]
+        CORR["Correlation - Rule Evaluator, Session Manager"]
+        DASH["Dashboard and API - React SPA, WebSocket, Cognito"]
+        COMM["Communication - Teams, Slack, SES, 3-tier"]
+        PLAT["Platform Services - Audit, Circuit Breaker, Archival"]
     end
 
-    ING -->|work-item.created| EB
-    EB -->|work-item.created| ORCH
-    EB -->|work-item.created| CORR
-    ORCH -->|plan.proposed| EB
-    EB -->|plan.proposed| DASH
-    DASH -->|plan.approved / plan.rejected| EB
-    EB -->|plan.approved| ORCH
-    ORCH -->|execution.requested| EXEC
-    EXEC -->|execution.completed / failed| EB
-    EB -->|execution.completed| ORCH
-    ORCH -->|work-item.resolved| EB
-    KB -->|runbook.generated / kb.updated| EB
-    CORR -->|correlation-group.detected| EB
-    COMM -->|notification.sent / failed| EB
-    PLAT -->|audit.entry-created / circuit-breaker.tripped| EB
-    EB -->|all events| PLAT
+    ING -->|"work-item.created"| EB
+    EB -->|"work-item.created"| ORCH
+    EB -->|"work-item.created"| CORR
+    ORCH -->|"plan.proposed"| EB
+    EB -->|"plan.proposed"| DASH
+    DASH -->|"plan.approved or plan.rejected"| EB
+    EB -->|"plan.approved"| ORCH
+    ORCH -->|"execution.requested"| EXEC
+    EXEC -->|"execution.completed or failed"| EB
+    EB -->|"execution.completed"| ORCH
+    ORCH -->|"work-item.resolved"| EB
+    KB -->|"runbook.generated or kb.updated"| EB
+    CORR -->|"correlation-group.detected"| EB
+    COMM -->|"notification.sent or failed"| EB
+    PLAT -->|"audit.entry-created or circuit-breaker.tripped"| EB
+    EB -->|"all events"| PLAT
 ```
 
 ## Event Flows
 
-### Happy Path: Work Item → Resolution
+### Happy Path: Work Item to Resolution
 
 ```mermaid
 sequenceDiagram
@@ -93,7 +93,7 @@ sequenceDiagram
         CORR->>EB: correlation-group.detected
         EB->>DASH: correlation-group.detected
     else Session expires
-        CORR->>CORR: Group Finalizer → close session
+        CORR->>CORR: Group Finalizer - close session
         CORR->>EB: correlation-group.updated
     end
 ```
