@@ -8,51 +8,32 @@ ForgeAdmin is an autonomous IT operations platform built for the Ohio Department
 
 ```mermaid
 graph TB
-    subgraph Foundation["Platform Foundation"]
-        EB["EventBridge Bus - forgeadmin-events"]
-        VPC["VPC + Transit Gateway"]
-        COG["Cognito User Pools"]
-        IAM["Shared IAM Roles"]
-    end
-
-    subgraph Contexts["Bounded Contexts"]
-        ING["Ingestion - ServiceNow, Email, FortiSIEM"]
-        ORCH["Orchestration - Triage, Research, Plan, Verify"]
-        EXEC["Execution - On-prem Bridge, mTLS, JEA"]
-        KB["Knowledge Base - Bedrock RAG, Runbooks, Feedback"]
-        CORR["Correlation - Rule Evaluator, Sessions, Groups"]
-        DASH["Dashboard and API - React SPA, WebSocket, RBAC"]
-        COMM["Communication - Teams, Slack, SES, 3-tier"]
-    end
-
-    subgraph Platform["Platform Services"]
-        AUDIT["Audit Trail"]
-        CB["Circuit Breaker"]
-        DEG["Degradation Monitor"]
-        ARCH["Archival - DynamoDB to S3"]
-    end
+    ING["Ingestion"]
+    CORR["Correlation"]
+    ORCH["Orchestration"]
+    EXEC["Execution"]
+    KB["Knowledge Base"]
+    DASH["Dashboard"]
+    COMM["Communication"]
+    PLAT["Platform Services"]
+    EB["EventBridge Bus"]
 
     ING -->|"work-item.created"| EB
     EB -->|"work-item.created"| CORR
-    CORR -->|"work-item.correlated"| EB
+    CORR -->|"correlated"| EB
     EB -->|"correlated"| ORCH
     ORCH -->|"plan.proposed"| EB
     EB -->|"plan.proposed"| DASH
     DASH -->|"approval.decision"| EB
     EB -->|"plan.approved"| ORCH
-    ORCH ---|"execute"| EXEC
-    EXEC -->|"execution.completed"| EB
+    ORCH -->|"execute"| EXEC
+    EXEC -->|"completed"| EB
     EB -->|"resolved"| KB
-    ORCH -->|"work-item.resolved"| EB
-    EB -->|"all events"| AUDIT
-    CB -->|"circuit-breaker.tripped"| EB
     EB -->|"alerts"| COMM
-    KB ---|"query and feedback"| ORCH
+    EB -->|"all events"| PLAT
 ```
 
-For the **complete AWS architecture showing every resource** (all 25 Lambdas, 10 DynamoDB tables, 10 SQS queues, Step Functions, Bedrock, CloudFront, and all connections), see:
-
-**[Complete System Map](./architecture/system-map.md)**
+For the **complete AWS architecture** showing every resource (25 Lambdas, 10 DynamoDB tables, 10 SQS queues, Step Functions, Bedrock, CloudFront, VPC, and all connections), see the **[Complete System Map](./architecture/system-map.md)**.
 
 ## Bounded Contexts
 
