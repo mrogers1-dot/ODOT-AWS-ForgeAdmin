@@ -1,0 +1,28 @@
+{
+  "title": "FeedbackCaptured",
+  "description": "Emitted when a feedback entry is captured from an outcome event",
+  "type": "object",
+  "required": ["version", "correlationId", "timestamp", "source", "detailType", "payload"],
+  "properties": {
+    "version": { "type": "string", "const": "1.0.0" },
+    "correlationId": { "type": "string", "format": "uuid" },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "source": { "type": "string", "const": "forgeadmin.knowledge-base" },
+    "detailType": { "type": "string", "const": "feedback.captured" },
+    "payload": {
+      "type": "object",
+      "required": ["feedbackId", "workItemId", "signal", "outcomeType", "capturedAt"],
+      "properties": {
+        "feedbackId": { "type": "string", "format": "uuid" },
+        "workItemId": { "type": "string", "format": "uuid" },
+        "signal": { "type": "string", "enum": ["positive", "negative"] },
+        "outcomeType": { "type": "string", "enum": ["approved", "rejected", "succeeded", "failed", "verified"] },
+        "capturedAt": { "type": "string", "format": "date-time" },
+        "category": { "type": "string" },
+        "confidenceAtDecision": { "type": "integer", "minimum": 0, "maximum": 100 }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

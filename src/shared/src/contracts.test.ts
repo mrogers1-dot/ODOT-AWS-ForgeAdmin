@@ -30,6 +30,8 @@ const EXPECTED_SCHEMAS = [
   "correlation/work-item.correlated.schema.json",
   "correlation/correlation-group.detected.schema.json",
   "correlation/correlation-group.updated.schema.json",
+  "knowledge-base/feedback.captured.schema.json",
+  "orchestration/feedback.summary-updated.schema.json",
 ];
 
 // Required top-level fields for EventEnvelope standard

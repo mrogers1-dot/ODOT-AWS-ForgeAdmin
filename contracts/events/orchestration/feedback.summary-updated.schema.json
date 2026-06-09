@@ -1,0 +1,23 @@
+{
+  "title": "FeedbackSummaryUpdated",
+  "description": "Emitted after feedback aggregation run completes",
+  "type": "object",
+  "required": ["version", "correlationId", "timestamp", "source", "detailType", "payload"],
+  "properties": {
+    "version": { "type": "string", "const": "1.0.0" },
+    "correlationId": { "type": "string", "format": "uuid" },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "source": { "type": "string", "const": "forgeadmin.orchestration" },
+    "detailType": { "type": "string", "const": "feedback.summary-updated" },
+    "payload": {
+      "type": "object",
+      "required": ["summariesUpdated", "completedAt"],
+      "properties": {
+        "summariesUpdated": { "type": "integer", "minimum": 0 },
+        "completedAt": { "type": "string", "format": "date-time" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}
