@@ -9,14 +9,14 @@
 
 ## Tasks
 
-- [ ] 17.1 Add playbook infrastructure to Knowledge Base Terraform module
+- [x] 17.1 Add playbook infrastructure to Knowledge Base Terraform module
   - Modify `terraform/contexts/knowledge-base/dynamodb.tf`: add `playbook-index` table with GSIs (`status-category-index`, `source-status-index`), `force_destroy = true`, on-demand capacity
   - Modify `terraform/contexts/knowledge-base/s3.tf`: add lifecycle rules for `playbooks/` and `playbooks/suggestions/` prefixes in existing storage bucket
   - Modify `terraform/contexts/knowledge-base/lambda.tf`: add `playbook-query-handler` Lambda, `playbook-validation` Lambda
   - Modify `terraform/contexts/knowledge-base/iam.tf`: playbook Lambda roles with DynamoDB read/write, S3 read/write
   - _Design Spec: Section 10.1_
 
-- [ ] 17.2 Define event schemas for playbook system
+- [x] 17.2 Define event schemas for playbook system
   - Create `contracts/events/knowledge-base/playbook.created.schema.json`: playbookId, title, version, source, categories, stepCount
   - Create `contracts/events/knowledge-base/playbook.updated.schema.json`: playbookId, title, previousVersion, newVersion, updatedBy
   - Create `contracts/events/orchestration/playbook.suggestion-created.schema.json`: suggestionId, pattern (runbookSequence, occurrences, successRate, categories), suggestedTitle
@@ -24,19 +24,19 @@
   - Register schemas in EventBridge Schema Registry
   - _Design Spec: Section 9_
 
-- [ ] 17.3 Implement playbook domain models
+- [x] 17.3 Implement playbook domain models
   - Create `src/contexts/knowledge-base/domain/models/playbook.ts`: Playbook, PlaybookParameter, PlaybookStep, FailureAction interfaces
   - Create `src/contexts/knowledge-base/domain/models/playbook-suggestion.ts`: PlaybookSuggestion interface with pattern, suggestedPlaybook, review status
   - Create `src/contexts/knowledge-base/domain/models/playbook-validators.ts`: validation rules — circular reference detection (DFS graph traversal), nesting depth check (max 3), required parameter completeness, runbook existence verification
   - _Design Spec: Sections 3.1, 6.2_
 
-- [ ] 17.4 Implement playbook validation logic
+- [x] 17.4 Implement playbook validation logic
   - **RED**: Write tests: (1) circular reference A→B→A detected, (2) nesting depth > 3 rejected, (3) missing runbook reference rejected, (4) incomplete parameter mapping rejected, (5) valid playbook passes all checks, (6) specific error messages returned for each violation type
   - **GREEN**: Create `src/contexts/knowledge-base/handlers/playbook-validation.ts`. Circular reference detection (DFS). Nesting depth check. Runbook existence check. Parameter completeness check. Return validation result with error messages.
   - **REFACTOR**: Extract graph traversal into reusable utility; ensure error messages include path to violation
   - _Design Spec: Sections 5.2, 8_
 
-- [ ] 17.5 Implement playbook query handler
+- [x] 17.5 Implement playbook query handler
   - Create `src/contexts/knowledge-base/handlers/playbook-query-handler.ts`
   - Query `playbook-index` by status=active + category match (GSI-1)
   - Filter by keyword overlap and riskLevel
@@ -45,7 +45,7 @@
   - Handle empty results gracefully
   - _Design Spec: Section 4.1_
 
-- [ ] 17.6 Implement playbook storage operations
+- [x] 17.6 Implement playbook storage operations
   - Create `src/contexts/knowledge-base/handlers/playbook-crud.ts`:
     - Create: validate → write to S3 (`playbooks/{id}/v{version}.json`) → write DynamoDB index → publish `playbook.created` event
     - Update: validate → write new version to S3 → update DynamoDB index (currentVersion) → publish `playbook.updated` event
@@ -55,12 +55,12 @@
   - Implement version pinning: `latest` resolves to currentVersion at expansion time
   - _Design Spec: Sections 3.2, 3.3_
 
-- [ ] 17.7 Enhance IKnowledgeBase port with playbook support
+- [x] 17.7 Enhance IKnowledgeBase port with playbook support
   - Modify `src/contexts/orchestration/domain/ports/IKnowledgeBase.ts`: add `getApplicablePlaybooks(category: string, keywords: string[], riskLevel: string): Promise<Playbook[]>`
   - Create `src/contexts/orchestration/adapters/knowledge-base-client.ts` modification: implement `getApplicablePlaybooks` by calling KB context's playbook-query-handler (via EventBridge request-response or direct Lambda invocation)
   - _Design Spec: Section 4.1_
 
-- [ ] 17.8 Modify Planning agent to use playbooks as building blocks
+- [x] 17.8 Modify Planning agent to use playbooks as building blocks
   - Modify `src/contexts/orchestration/domain/agents/planning.ts`:
     - After Research phase, call `IKnowledgeBase.getApplicablePlaybooks()` with work item's category/keywords/riskLevel
     - Inject applicable playbooks into planning prompt (title, version, success rate, usage count, step summary, parameters)
@@ -70,19 +70,19 @@
   - Modify plan model: add `type: 'custom' | 'playbook-ref'` to PlanStep interface
   - _Design Spec: Sections 4.2, 4.3, 4.4_
 
-- [ ] 17.9 Implement playbook expansion in Execution context
+- [x] 17.9 Implement playbook expansion in Execution context
   - **RED**: Write tests: (1) simple playbook-ref expands to flat steps, (2) nested playbook-ref expands recursively (max 3 deep), (3) parameters are substituted correctly, (4) version "latest" resolves to currentVersion, (5) deleted runbook halts with clear error, (6) hierarchical step numbering (2.1, 2.2, 2.3), (7) onFailure logic preserved per expanded step
   - **GREEN**: Create `src/contexts/execution/domain/playbook-expander.ts`. Fetch playbook, resolve version, substitute params, recursively expand nested refs, output flat plan with hierarchical numbering. Handle expansion failures.
   - **REFACTOR**: Ensure expansion is pure (no side effects); extract version resolution logic
   - _Design Spec: Sections 5.1, 5.2, 5.3_
 
-- [ ] 17.10 Implement conditional logic execution in Execution context
+- [x] 17.10 Implement conditional logic execution in Execution context
   - **RED**: Write tests: (1) step failure with onFailure=halt stops playbook, (2) onFailure=alternative executes alternative and resumes at specified step, (3) onFailure=skip-to jumps to correct step, (4) onFailure=continue logs failure and proceeds, (5) notifyOnFailure=true publishes notification, (6) all conditional paths exhausted escalates to plan-level failure
   - **GREEN**: Modify `src/contexts/execution/domain/execution-orchestrator.ts`: evaluate onFailure action on step failure. Implement halt, alternative, skip-to, continue actions. Handle notification flag. Escalate when all paths exhaust.
   - **REFACTOR**: Extract conditional logic into strategy pattern; ensure step counter tracks correctly through jumps
   - _Design Spec: Section 5.3_
 
-- [ ] 17.11 Implement pattern detection for playbook suggestions
+- [x] 17.11 Implement pattern detection for playbook suggestions
   - Modify `src/contexts/orchestration/handlers/feedback-aggregator.ts` (extends Task Group 13):
     - After standard aggregation, add pattern detection step
     - Query `feedback-index` for successful plans in last 90 days that used 3+ KB items
@@ -97,7 +97,7 @@
   - Thresholds configurable via Steering docs (min sequence length, min occurrences, min success rate, max suggestions per run)
   - _Design Spec: Sections 6.1, 6.2, 6.3_
 
-- [ ] 17.12 Implement Dashboard API endpoints for playbook management
+- [x] 17.12 Implement Dashboard API endpoints for playbook management
   - Create `src/contexts/dashboard/api/handlers/playbooks.ts`:
     - GET /playbooks: list all (filterable by status, category, source)
     - POST /playbooks: create (team_lead only, calls KB validation before save)
@@ -116,13 +116,13 @@
   - Implement RBAC: team_lead for all write operations, team_member read-only
   - _Design Spec: Section 7.5_
 
-- [ ] 17.13 Add playbook API to Dashboard Terraform module
+- [x] 17.13 Add playbook API to Dashboard Terraform module
   - Modify `terraform/contexts/dashboard/lambda.tf`: add playbook handler Lambda, playbook-suggestions handler Lambda
   - Modify `terraform/contexts/dashboard/api-gateway.tf`: add /playbooks/* and /playbook-suggestions/* routes with Cognito authorizer
   - Modify `terraform/contexts/dashboard/iam.tf`: playbook Lambdas need cross-context access to KB's playbook DynamoDB table and S3 paths
   - _Design Spec: Section 10.4_
 
-- [ ] 17.14 Implement Playbook Management Dashboard UI
+- [x] 17.14 Implement Playbook Management Dashboard UI
   - Create React component: `src/contexts/dashboard/frontend/views/PlaybookList.tsx` — list of all playbooks with status/category/usage/success rate columns, filterable
   - Create React component: `src/contexts/dashboard/frontend/views/PlaybookEditor.tsx`:
     - Metadata form: title, description, categories, keywords, risk levels, parameters
@@ -136,7 +136,7 @@
   - Add Zustand store slice: `playbooks` with list, editor state, suggestions, usage data
   - _Design Spec: Sections 7.1, 7.2, 7.3, 7.4_
 
-- [ ] 17.15 Write property tests for playbook system
+- [x] 17.15 Write property tests for playbook system
   - **RED**: Write fast-check property tests: (1) Expansion completeness — after expansion, no `playbook-ref` steps remain, (2) Circular reference detection — validator catches all cycles, (3) Nesting depth enforcement — expansion never exceeds 3 levels, (4) Parameter resolution — all required parameters are resolved after expansion
   - **GREEN**: Implement generators for playbook graph structures with cycles injected; run property tests and fix violations
   - **REFACTOR**: Add generators for deeply nested structures; validate graceful handling of impossible expansions

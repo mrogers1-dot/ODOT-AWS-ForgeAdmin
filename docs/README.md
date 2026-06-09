@@ -50,4 +50,21 @@ See [QUICKSTART.md](./QUICKSTART.md) for setup instructions.
 
 ## Implementation Progress
 
+**Status: ✅ All 10 waves complete** — 285 tests passing, 9 Terraform modules validating, full E2E pipeline tested.
+
 See [Task Groups](./tasks/README.md) for the full implementation breakdown across 16 task groups and 10 execution waves.
+
+### What's Deployed
+
+- **Terraform Infrastructure**: Foundation + 7 bounded context modules (all validate cleanly)
+- **Domain Logic**: All 5 orchestration agents (Triage, Research, Planning, Verification, Supervisor)
+- **Ingestion**: Normalizers for ServiceNow/Email/FortiSIEM + deduplication + event publisher
+- **Execution**: Orchestrator with halt-on-failure + rollback + playbook expansion
+- **Correlation**: Rule evaluator + session manager + group finalizer
+- **Platform Services**: Audit trail, circuit breaker, graceful degradation, sensitive data redaction
+- **Dashboard**: Module state management + RBAC + WebSocket handler + Zustand stores
+- **Communication**: Notification dispatcher + morning digest + NL command handler
+- **Feedback Loop**: Capture handler + guardrail rules + calibration computation
+- **Contracts**: 25 event schemas + OpenAPI 3.1 spec + contract validator
+- **CI/CD**: GitHub Actions (PR checks + Terraform deploy with rollback)
+- **Property Tests**: 12 formal invariant proofs (fast-check)

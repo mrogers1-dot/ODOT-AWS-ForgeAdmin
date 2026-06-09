@@ -55,9 +55,9 @@
 
 ## Checkpoint
 
-- [ ] Ensure all Terraform validates successfully (`terraform validate` in each module)
-- [ ] Verify deploy-all.sh and destroy-all.sh scripts execute without errors
-- [ ] Verify CI/CD pipeline triggers correctly on PR and merge
+- [x] Ensure all Terraform validates successfully (`terraform validate` in each module)
+- [x] Verify deploy-all.sh and destroy-all.sh scripts execute without errors
+- [x] Verify CI/CD pipeline triggers correctly on PR and merge
 
 ## Wave Assignment
 
