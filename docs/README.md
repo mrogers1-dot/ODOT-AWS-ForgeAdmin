@@ -83,6 +83,19 @@ The system map includes:
 - RBAC security flow (Cognito to API Gateway to Lambda)
 - Feedback loop continuous learning cycle
 
+## Production Maturity Roadmap
+
+The [Production Maturity Roadmap](./superpowers/specs/2026-06-09-production-maturity-roadmap-design.md) defines the path from "code complete" to "autonomously handling low-risk tickets in production."
+
+```
+Phase 1: "Lights On"         (Week 1-2)   — Foundation + Dashboard visible
+Phase 2: "Brain Online"      (Week 2-4)   — AI triage/planning in shadow mode
+Phase 3: "Bridge Building"   (Week 3-8)   — On-prem execution path (parallel)
+Phase 4: "Go Live"           (Week 6-10)  — Promote modules, validate POC
+```
+
+The roadmap exploits ForgeAdmin's event-driven architecture to prove 80% of the platform's value (ingestion, triage, research, planning, knowledge base growth) while the on-prem execution bridge is built in parallel.
+
 ## Key Design Decisions
 
 All architectural decisions are documented in [ADRs](./adr/):
