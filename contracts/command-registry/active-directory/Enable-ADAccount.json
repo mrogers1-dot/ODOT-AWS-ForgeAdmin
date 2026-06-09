@@ -1,0 +1,12 @@
+{
+  "cmdlet": "Enable-ADAccount",
+  "category": "active-directory",
+  "description": "Enables a disabled Active Directory user account",
+  "target": { "objectType": "AD User", "identifierParam": "Identity" },
+  "attributes": [
+    { "name": "Enabled", "changeType": "set", "reversible": true }
+  ],
+  "probeCommands": [
+    { "command": "Get-ADUser -Identity {Identity} -Properties Enabled | Select-Object Enabled", "outputAttribute": "Enabled" }
+  ]
+}

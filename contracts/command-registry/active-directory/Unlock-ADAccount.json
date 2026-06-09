@@ -1,0 +1,12 @@
+{
+  "cmdlet": "Unlock-ADAccount",
+  "category": "active-directory",
+  "description": "Unlocks an Active Directory user account",
+  "target": { "objectType": "AD User", "identifierParam": "Identity" },
+  "attributes": [
+    { "name": "LockedOut", "changeType": "set", "reversible": true }
+  ],
+  "probeCommands": [
+    { "command": "Get-ADUser -Identity {Identity} -Properties LockedOut | Select-Object LockedOut", "outputAttribute": "LockedOut" }
+  ]
+}

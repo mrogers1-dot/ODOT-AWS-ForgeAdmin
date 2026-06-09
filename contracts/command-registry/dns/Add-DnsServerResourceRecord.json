@@ -1,0 +1,12 @@
+{
+  "cmdlet": "Add-DnsServerResourceRecord",
+  "category": "dns",
+  "description": "Adds a DNS resource record to a zone",
+  "target": { "objectType": "DNS Record", "identifierParam": "Name" },
+  "attributes": [
+    { "name": "RecordData", "changeType": "add", "reversible": true }
+  ],
+  "probeCommands": [
+    { "command": "Resolve-DnsName -Name {Name} -Type {Type}", "outputAttribute": "RecordData" }
+  ]
+}

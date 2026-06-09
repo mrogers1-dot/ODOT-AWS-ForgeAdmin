@@ -1,0 +1,12 @@
+{
+  "cmdlet": "Stop-Service",
+  "category": "services",
+  "description": "Stops a running Windows service",
+  "target": { "objectType": "Service", "identifierParam": "Name" },
+  "attributes": [
+    { "name": "Status", "changeType": "set", "reversible": true }
+  ],
+  "probeCommands": [
+    { "command": "Get-Service -Name {Name} | Select-Object Status", "outputAttribute": "Status" }
+  ]
+}
