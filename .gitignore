@@ -1,0 +1,20 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+*.tsbuildinfo
+
+# Turborepo
+.turbo/
+
+# Editor
+.vscode/
+
+# OS files
+.DS_Store
+
+# Environment
+.env
+.env.*
+!.env.example
