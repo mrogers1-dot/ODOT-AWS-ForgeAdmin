@@ -150,3 +150,6 @@ See [QUICKSTART.md](./QUICKSTART.md) for setup instructions.
 | 8 | Dashboard API, module state, WebSocket, communication handlers, calibration | ✅ |
 | 9 | React frontend stores, shadow mode, connectivity monitor, playbook expander | ✅ |
 | 10 | Integration tests (E2E pipeline, circuit breaker, shadow mode, degradation, correlation) | ✅ |
+
+
+Internal Use Only - Ohio Department of Transportation. 
