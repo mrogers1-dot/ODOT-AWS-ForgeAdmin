@@ -14,7 +14,7 @@ graph TB
     subgraph Contexts["Bounded Contexts"]
         ING["Ingestion - ServiceNow, Email, FortiSIEM"]
         ORCH["Orchestration - Triage, Research, Plan, Verify"]
-        EXEC["Execution - On-prem Bridge, SSM RunCommand"]
+        EXEC["Execution - On-prem Bridge, mTLS + JEA"]
         KB["Knowledge Base - Bedrock RAG, Runbooks"]
         CORR["Correlation - Rule Evaluator, Session Manager"]
         DASH["Dashboard and API - React SPA, WebSocket, Cognito"]
@@ -67,7 +67,7 @@ sequenceDiagram
     DASH->>EB: plan.approved
     EB->>ORCH: plan.approved
     ORCH->>EXEC: execution.requested
-    EXEC->>EXEC: Execute via SSM/on-prem bridge
+    EXEC->>EXEC: Execute via mTLS/on-prem bridge (Transit GW + JEA)
     EXEC->>EB: execution.completed
     EB->>ORCH: execution.completed
     ORCH->>ORCH: Verify outcome

@@ -49,6 +49,8 @@ done
 
 ### 5. Validate contracts
 
+> **Note:** The `validate:contracts` script (`scripts/validate-contracts.ts`) is defined in `package.json` but not yet implemented. Contract validation logic exists in `src/shared/src/contract-validator.ts` and is exercised by unit tests. To validate schemas manually, run `pnpm test` which includes contract validation test suites.
+
 ```bash
 pnpm validate:contracts
 ```
@@ -58,7 +60,8 @@ pnpm validate:contracts
 ### Deploy everything (foundation first, then contexts in parallel)
 
 ```bash
-./terraform/scripts/deploy-all.sh
+./terraform/scripts/deploy-all.sh        # defaults to 'dev'
+./terraform/scripts/deploy-all.sh dev    # explicit environment
 ```
 
 ### Deploy a single context
@@ -113,8 +116,22 @@ DOT-ForgeAdmin/
 │   ├── contexts/           # Per-context Terraform modules (8 modules)
 │   ├── environments/       # Environment-specific variables (dev.tfvars)
 │   └── scripts/            # Deploy/destroy/validate automation
+│       ├── deploy-all.sh           # Full deploy: foundation first, contexts parallel
+│       ├── destroy-all.sh          # Full teardown: contexts first, foundation last
+│       ├── destroy-context.sh      # Single context teardown
+│       ├── validate-context.sh     # Validate a single context module
+│       ├── validate-foundation.sh  # Validate foundation module
+│       ├── validate-platform.sh    # Validate platform module
+│       └── validate-scripts.sh     # Validate all scripts syntax
 ├── .github/workflows/      # CI/CD (PR checks + Terraform deploy)
-└── scripts/                # Utility scripts (contract validation, etc.)
+├── scripts/                # Utility scripts
+│   ├── add-cognito-users.sh        # Create Cognito user accounts
+│   ├── bootstrap-state.sh          # One-time Terraform state backend setup
+│   ├── configure-ssm-params.sh     # Set SSM Parameter Store values
+│   ├── deploy-frontend.sh          # Build and deploy React SPA to S3/CloudFront
+│   ├── seed-knowledge-base.ts      # Upload runbooks to KB S3 + trigger Bedrock sync
+│   └── verify-deployment.sh        # Post-deploy health check
+└── seed-runbooks/          # Runbook .md files to seed the Knowledge Base
 ```
 
 ## Environment Variables

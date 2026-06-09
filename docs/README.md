@@ -43,7 +43,7 @@ For the **complete AWS architecture** showing every resource (25 Lambdas, 10 Dyn
 | **Orchestration** | Multi-agent pipeline: Triage, Research, Plan, Execute, Verify | Hexagonal |
 | **Execution** | Bridge to on-prem infrastructure, execute approved plans | Hexagonal |
 | **Knowledge Base** | RAG-powered runbook storage and retrieval via Bedrock | Simple Lambda |
-| **Correlation** | Incident correlation and pattern detection across work items | Simple Lambda |
+| **Correlation** | Incident correlation and pattern detection across work items | Hexagonal |
 | **Dashboard and API** | Human-in-the-loop approvals, real-time monitoring | React + Lambda |
 | **Communication** | Teams, Slack, email notifications with 3-tier escalation | Simple Lambda |
 | **Platform** | Observability, audit trail, circuit breaker, archival | Terraform + Lambda |
@@ -100,10 +100,10 @@ All architectural decisions are documented in [ADRs](./adr/):
 
 | Type | Location | Description |
 |------|----------|-------------|
-| Event Schemas | `contracts/events/` | 26 JSON Schema event definitions across 9 namespaces |
+| Event Schemas | `contracts/events/` | 26 JSON Schema event definitions across 9 namespaces (common, communication, correlation, dashboard, execution, ingestion, knowledge-base, orchestration, platform) |
 | OpenAPI | `contracts/api/openapi.yaml` | Dashboard REST API (Modules, Approvals, Executions, Audit, Agents) |
-| Command Registry | `contracts/command-registry/` | PowerShell cmdlet definitions for on-prem execution |
-| Correlation Rules | `contracts/correlation-rules/` | Temporal, causal, infrastructure, and repeat pattern rules |
+| Command Registry | `contracts/command-registry/` | PowerShell cmdlet definitions for on-prem execution (active-directory, dns, services) |
+| Correlation Rules | `contracts/correlation-rules/` | Rule schemas: temporal, causal, infrastructure, and repeat patterns |
 | Common Schema | `contracts/events/common/` | Shared EventEnvelope definitions |
 
 ## Testing
@@ -127,11 +127,12 @@ See [QUICKSTART.md](./QUICKSTART.md) for setup instructions.
 | Document | Description |
 |----------|-------------|
 | [QUICKSTART.md](./QUICKSTART.md) | Prerequisites, setup, deploy, verify |
+| [DEPLOYMENT.md](./DEPLOYMENT.md) | Full deployment runbook (Phase 1 & 2) |
 | [architecture/system-map.md](./architecture/system-map.md) | Complete AWS architecture (Mermaid) |
 | [architecture/context-map.md](./architecture/context-map.md) | Context relationships and event registry |
 | [tasks/README.md](./tasks/README.md) | Implementation progress (all 10 waves complete) |
 | [adr/](./adr/) | 8 Architecture Decision Records |
-| [superpowers/specs/](./superpowers/specs/) | Feature design specs (correlation, feedback, calibration, playbook, dry-run) |
+| [superpowers/specs/](./superpowers/specs/) | Feature design specs and production maturity roadmap |
 
 ## Implementation Status
 

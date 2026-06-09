@@ -83,6 +83,7 @@ main() {
     "$TERRAFORM_DIR/contexts/orchestration"
     "$TERRAFORM_DIR/contexts/execution"
     "$TERRAFORM_DIR/contexts/knowledge-base"
+    "$TERRAFORM_DIR/contexts/correlation"
     "$TERRAFORM_DIR/contexts/dashboard"
     "$TERRAFORM_DIR/contexts/communication"
   )

@@ -32,7 +32,7 @@ Implementation is organized into 16 logical task groups, each corresponding to a
 | 09 | [Platform Services](./09-platform-services.md) | Platform/Infra | Simple Lambda | 6 |
 | 10 | [Integration & Reliability](./10-integration-reliability.md) | Cross-cutting | Integration | 3 |
 | 11 | [Skills & Steering](./11-skills-steering.md) | Cross-cutting | Simple Lambda | 7 |
-| 12 | [Incident Correlation](./12-incident-correlation.md) | Correlation | Simple Lambda | 13 |
+| 12 | [Incident Correlation](./12-incident-correlation.md) | Correlation | Hexagonal | 13 |
 | 13 | [Feedback Loop](./13-feedback-loop.md) | KB + Orchestration | Simple Lambda | 11 |
 | 14 | [Dry-Run Simulation](./14-dry-run-simulation.md) | Execution + Dashboard | Hexagonal | 13 |
 | 15 | [Confidence Calibration](./15-confidence-calibration.md) | Orchestration + Dashboard | React + Lambda | 10 |
