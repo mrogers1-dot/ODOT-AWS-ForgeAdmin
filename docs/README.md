@@ -48,25 +48,6 @@ For the **complete AWS architecture** showing every resource (25 Lambdas, 10 Dyn
 | **Communication** | Teams, Slack, email notifications with 3-tier escalation | Simple Lambda |
 | **Platform** | Observability, audit trail, circuit breaker, archival | Terraform + Lambda |
 
-## AWS Resource Summary
-
-| Service | Count | Purpose |
-|---------|-------|---------|
-| Lambda | 25 | All domain logic (agents, handlers, monitors) |
-| DynamoDB | 10 | State storage for each bounded context |
-| SQS | 10 | Event buffering + dead letter queues |
-| S3 | 5 | SPA hosting, runbooks, feedback docs, audit archive |
-| API Gateway | 2 | Webhook ingestion + execution callbacks |
-| Step Functions | 1 | Multi-agent orchestration workflow |
-| EventBridge | 1 bus + 4 rules | Central event routing + scheduled triggers |
-| CloudFront | 1 | Dashboard SPA with HTTPS |
-| Cognito | 1 pool | Authentication with team_lead and team_member roles |
-| Bedrock | 1 | Claude and Titan model access for AI agents |
-| VPC | 1 | Networking with NAT, VPC endpoints, Transit Gateway |
-| Secrets Manager | 1 | mTLS certificates for on-prem bridge |
-
-**Total: ~115 AWS resources across 9 Terraform modules**
-
 ## Detailed Architecture Diagrams
 
 All diagrams use Mermaid and render directly on GitHub:
@@ -95,6 +76,21 @@ Phase 4: "Go Live"           (Week 6-10)  — Promote modules, validate POC
 ```
 
 The roadmap exploits ForgeAdmin's event-driven architecture to prove 80% of the platform's value (ingestion, triage, research, planning, knowledge base growth) while the on-prem execution bridge is built in parallel.
+## Getting Started
+
+See [QUICKSTART.md](./QUICKSTART.md) for setup instructions.
+
+## Documentation Index
+
+| Document | Description |
+|----------|-------------|
+| [QUICKSTART.md](./QUICKSTART.md) | Prerequisites, setup, deploy, verify |
+| [DEPLOYMENT.md](./DEPLOYMENT.md) | Full deployment runbook (Phase 1 & 2) |
+| [architecture/system-map.md](./architecture/system-map.md) | Complete AWS architecture (Mermaid) |
+| [architecture/context-map.md](./architecture/context-map.md) | Context relationships and event registry |
+| [tasks/README.md](./tasks/README.md) | Implementation progress (all 10 waves complete) |
+| [adr/](./adr/) | 8 Architecture Decision Records |
+| [superpowers/specs/](./superpowers/specs/) | Feature design specs and production maturity roadmap |
 
 ## Key Design Decisions
 
@@ -131,22 +127,6 @@ All architectural decisions are documented in [ADRs](./adr/):
 
 All tests run via `pnpm test` or `./node_modules/.bin/vitest run`.
 
-## Getting Started
-
-See [QUICKSTART.md](./QUICKSTART.md) for setup instructions.
-
-## Documentation Index
-
-| Document | Description |
-|----------|-------------|
-| [QUICKSTART.md](./QUICKSTART.md) | Prerequisites, setup, deploy, verify |
-| [DEPLOYMENT.md](./DEPLOYMENT.md) | Full deployment runbook (Phase 1 & 2) |
-| [architecture/system-map.md](./architecture/system-map.md) | Complete AWS architecture (Mermaid) |
-| [architecture/context-map.md](./architecture/context-map.md) | Context relationships and event registry |
-| [tasks/README.md](./tasks/README.md) | Implementation progress (all 10 waves complete) |
-| [adr/](./adr/) | 8 Architecture Decision Records |
-| [superpowers/specs/](./superpowers/specs/) | Feature design specs and production maturity roadmap |
-
 ## Implementation Status
 
 **All 10 waves complete.** Every task built via RED/GREEN/REFACTOR TDD.
@@ -165,5 +145,23 @@ See [QUICKSTART.md](./QUICKSTART.md) for setup instructions.
 | 9 | React frontend stores, shadow mode, connectivity monitor, playbook expander | ✅ |
 | 10 | Integration tests (E2E pipeline, circuit breaker, shadow mode, degradation, correlation) | ✅ |
 
+## AWS Resource Summary
+
+| Service | Count | Purpose |
+|---------|-------|---------|
+| Lambda | 25 | All domain logic (agents, handlers, monitors) |
+| DynamoDB | 10 | State storage for each bounded context |
+| SQS | 10 | Event buffering + dead letter queues |
+| S3 | 5 | SPA hosting, runbooks, feedback docs, audit archive |
+| API Gateway | 2 | Webhook ingestion + execution callbacks |
+| Step Functions | 1 | Multi-agent orchestration workflow |
+| EventBridge | 1 bus + 4 rules | Central event routing + scheduled triggers |
+| CloudFront | 1 | Dashboard SPA with HTTPS |
+| Cognito | 1 pool | Authentication with team_lead and team_member roles |
+| Bedrock | 1 | Claude and Titan model access for AI agents |
+| VPC | 1 | Networking with NAT, VPC endpoints, Transit Gateway |
+| Secrets Manager | 1 | mTLS certificates for on-prem bridge |
+
+**Total: ~115 AWS resources across 9 Terraform modules**
 
 Internal Use Only - Ohio Department of Transportation. 
