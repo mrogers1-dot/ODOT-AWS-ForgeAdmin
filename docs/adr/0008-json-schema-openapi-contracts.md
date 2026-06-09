@@ -6,7 +6,7 @@ Accepted
 
 ## Context
 
-With 7 bounded contexts communicating via events and a dashboard API, we need:
+With 8 bounded contexts communicating via events and a dashboard API, we need:
 
 - A single source of truth for event structures
 - Compile-time and runtime validation of events

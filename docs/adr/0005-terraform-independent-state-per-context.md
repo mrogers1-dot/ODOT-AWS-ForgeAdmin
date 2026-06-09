@@ -6,7 +6,7 @@ Accepted
 
 ## Context
 
-ForgeAdmin deploys 7 bounded contexts plus a foundation layer. We need an infrastructure-as-code strategy that supports:
+ForgeAdmin deploys 8 bounded contexts plus a foundation layer. We need an infrastructure-as-code strategy that supports:
 
 - Independent deployment and destruction of each context
 - Parallel context deployment for speed

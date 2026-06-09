@@ -9,7 +9,7 @@ All 10 waves executed successfully via RED/GREEN/REFACTOR TDD.
 | Total tests | 285 |
 | Test files | 51 |
 | Terraform modules | 9 |
-| Event schemas | 25 |
+| Event schemas | 26 |
 | Property tests | 12 |
 | Integration tests | 6 |
 
@@ -102,6 +102,7 @@ Each bounded context deploys and destroys independently:
 |---------|---------|--------|
 | Orchestration | Hexagonal | Complex domain logic with many external dependencies |
 | Execution | Hexagonal | Bridge pattern to on-prem; multiple adapters |
+| Correlation | Hexagonal | Rule engine with ports for storage, history, enrichment |
 | Ingestion | Simple Lambda | Straightforward ETL with minimal domain logic |
 | Knowledge Base | Simple Lambda | Thin handlers around Bedrock KB |
 | Dashboard | React SPA + Lambda | User-facing with real-time WebSocket updates |

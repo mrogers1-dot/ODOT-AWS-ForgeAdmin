@@ -1,6 +1,6 @@
 # ForgeAdmin Context Map
 
-## Visual Map
+## Visual Map (ASCII)
 
 ```
                     ┌──────────────────────────────────────────┐
@@ -12,65 +12,131 @@
                     │          EVENTBRIDGE BUS                   │
                     │       (forgeadmin-events)                  │
                     └──────────────────────────────────────────┘
-                      │        │        │        │        │
-    ┌─────────────────┼────────┼────────┼────────┼────────┼──────────┐
-    │                 │        │        │        │        │          │
-    ▼                 ▼        ▼        ▼        ▼        ▼          ▼
-┌────────┐     ┌──────────┐┌────────┐┌────────┐┌────────┐┌────────────┐
-│INGESTION│     │ORCHESTR- ││EXECU-  ││KNOWL-  ││DASH-   ││COMMUNICA-  │
-│         │     │ATION     ││TION    ││EDGE    ││BOARD   ││TION        │
-│ServiceNow│    │          ││        ││BASE    ││& API   ││            │
-│Email     │────▶ Triage   ││On-prem ││        ││        ││Teams/Slack │
-│FortiSIEM │    │ Research ││bridge  ││Bedrock ││React   ││Email (SES) │
-│          │    │ Planning ││SSM Run ││RAG     ││WebSock ││3-tier      │
-│          │    │ Verify   ││Command ││        ││Cognito ││escalation  │
-└────────┘     │ Supervise││        ││        ││        ││            │
-               └──────────┘└────────┘└────────┘└────────┘└────────────┘
-                      │                  │                      │
-                      ▼                  ▼                      ▼
-               ┌──────────────────────────────────────────────────┐
-               │              PLATFORM SERVICES                     │
-               │  Audit Trail │ Circuit Breaker │ Archival │ DLQ   │
-               └──────────────────────────────────────────────────┘
+                      │        │        │        │        │        │
+    ┌─────────────────┼────────┼────────┼────────┼────────┼────────┼────────┐
+    │                 │        │        │        │        │        │        │
+    ▼                 ▼        ▼        ▼        ▼        ▼        ▼        ▼
+┌────────┐     ┌──────────┐┌────────┐┌────────┐┌────────┐┌────────────┐┌────────┐
+│INGESTION│     │ORCHESTR- ││EXECU-  ││KNOWL-  ││DASH-   ││COMMUNICA-  ││CORRELA-│
+│         │     │ATION     ││TION    ││EDGE    ││BOARD   ││TION        ││TION    │
+│ServiceNow│    │          ││        ││BASE    ││& API   ││            ││        │
+│Email     │────▶ Triage   ││On-prem ││        ││        ││Teams/Slack ││Rule    │
+│FortiSIEM │    │ Research ││bridge  ││Bedrock ││React   ││Email (SES) ││Evaluator│
+│          │    │ Planning ││SSM Run ││RAG     ││WebSock ││3-tier      ││Session │
+│          │    │ Verify   ││Command ││Feedback││Cognito ││escalation  ││Manager │
+│          │    │ Supervise││        ││        ││        ││            ││Grouping│
+└────────┘     └──────────┘└────────┘└────────┘└────────┘└────────────┘└────────┘
+                      │                  │                      │            │
+                      ▼                  ▼                      ▼            ▼
+               ┌──────────────────────────────────────────────────────────────┐
+               │                   PLATFORM SERVICES                           │
+               │  Audit Trail │ Circuit Breaker │ Archival │ DLQ │ Degradation │
+               └──────────────────────────────────────────────────────────────┘
+```
+
+## Visual Map (Mermaid)
+
+```mermaid
+graph TB
+    subgraph Foundation["Platform Foundation"]
+        EB[EventBridge Bus<br/>forgeadmin-events]
+        VPC[VPC]
+        Cognito[Cognito]
+        IAM[IAM]
+    end
+
+    subgraph Contexts["Bounded Contexts"]
+        ING[Ingestion<br/>ServiceNow / Email / FortiSIEM]
+        ORCH[Orchestration<br/>Triage → Research → Plan → Verify]
+        EXEC[Execution<br/>On-prem Bridge / SSM RunCommand]
+        KB[Knowledge Base<br/>Bedrock RAG / Runbooks]
+        CORR[Correlation<br/>Rule Evaluator / Session Manager]
+        DASH[Dashboard & API<br/>React SPA / WebSocket / Cognito]
+        COMM[Communication<br/>Teams / Slack / SES / 3-tier]
+        PLAT[Platform Services<br/>Audit / Circuit Breaker / Archival]
+    end
+
+    ING -->|work-item.created| EB
+    EB -->|work-item.created| ORCH
+    EB -->|work-item.created| CORR
+    ORCH -->|plan.proposed| EB
+    EB -->|plan.proposed| DASH
+    DASH -->|plan.approved / plan.rejected| EB
+    EB -->|plan.approved| ORCH
+    ORCH -->|execution.requested| EXEC
+    EXEC -->|execution.completed / failed| EB
+    EB -->|execution.completed| ORCH
+    ORCH -->|work-item.resolved| EB
+    KB -->|runbook.generated / kb.updated| EB
+    CORR -->|correlation-group.detected| EB
+    COMM -->|notification.sent / failed| EB
+    PLAT -->|audit.entry-created / circuit-breaker.tripped| EB
+    EB -->|all events| PLAT
 ```
 
 ## Event Flows
 
 ### Happy Path: Work Item → Resolution
 
-```
-Ingestion           Orchestration        Execution       Knowledge Base
-    │                    │                    │                │
-    │ work-item.created  │                    │                │
-    │───────────────────▶│                    │                │
-    │                    │                    │                │
-    │                    │ (internal: triage) │                │
-    │                    │ (internal: research)│               │
-    │                    │                    │                │
-    │                    │◀───────────────────│ kb.query.result│
-    │                    │                    │                │
-    │                    │ (internal: plan)   │                │
-    │                    │                    │                │
-    │                    │ plan.proposed ─────▶│ Dashboard      │
-    │                    │◀──── plan.approved │                │
-    │                    │                    │                │
-    │                    │ execution.requested│                │
-    │                    │───────────────────▶│                │
-    │                    │                    │                │
-    │                    │◀───────────────────│                │
-    │                    │ execution.completed│                │
-    │                    │                    │                │
-    │                    │ (internal: verify) │                │
-    │                    │                    │                │
-    │                    │ work-item.resolved │                │
-    │                    │───────────────────▶│ (all contexts) │
+```mermaid
+sequenceDiagram
+    participant ING as Ingestion
+    participant EB as EventBridge
+    participant ORCH as Orchestration
+    participant KB as Knowledge Base
+    participant DASH as Dashboard
+    participant EXEC as Execution
+    participant CORR as Correlation
+
+    ING->>EB: work-item.created
+    EB->>ORCH: work-item.created
+    EB->>CORR: work-item.created
+    CORR->>CORR: Evaluate rules, manage session
+    ORCH->>ORCH: Triage
+    ORCH->>KB: Query for relevant runbooks
+    KB-->>ORCH: kb.query.result
+    ORCH->>ORCH: Research & Plan
+    ORCH->>EB: plan.proposed
+    EB->>DASH: plan.proposed (render for approval)
+    DASH->>EB: plan.approved
+    EB->>ORCH: plan.approved
+    ORCH->>EXEC: execution.requested
+    EXEC->>EXEC: Execute via SSM/on-prem bridge
+    EXEC->>EB: execution.completed
+    EB->>ORCH: execution.completed
+    ORCH->>ORCH: Verify outcome
+    ORCH->>EB: work-item.resolved
+    EB->>DASH: work-item.resolved
+    EB->>KB: work-item.resolved (learn)
 ```
 
-### Cross-Context Event Registry
+### Correlation Flow: Pattern Detection
+
+```mermaid
+sequenceDiagram
+    participant ING as Ingestion
+    participant EB as EventBridge
+    participant CORR as Correlation
+    participant DASH as Dashboard
+
+    ING->>EB: work-item.created
+    EB->>CORR: work-item.created
+    CORR->>CORR: Rule Evaluator (temporal, causal, infra, repeat)
+    CORR->>CORR: Session Manager (group open/update)
+    alt Group threshold met
+        CORR->>EB: correlation-group.detected
+        EB->>DASH: correlation-group.detected
+    else Session expires
+        CORR->>CORR: Group Finalizer → close session
+        CORR->>EB: correlation-group.updated
+    end
+```
+
+## Cross-Context Event Registry
 
 | Event | Producer | Consumers |
 |-------|----------|-----------|
-| `work-item.created` | Ingestion | Orchestration, Dashboard, Audit |
+| `work-item.created` | Ingestion | Orchestration, Correlation, Dashboard, Audit |
 | `triage.completed` | Orchestration | Dashboard, Audit |
 | `plan.proposed` | Orchestration | Dashboard, Audit |
 | `plan.approved` | Dashboard | Orchestration, Audit |
@@ -79,19 +145,40 @@ Ingestion           Orchestration        Execution       Knowledge Base
 | `execution.failed` | Execution | Orchestration, Dashboard, Communication, Audit |
 | `verification.completed` | Orchestration | Dashboard, Knowledge Base, Audit |
 | `work-item.resolved` | Orchestration | All contexts |
+| `work-item.correlated` | Correlation | Orchestration, Dashboard, Audit |
+| `correlation-group.detected` | Correlation | Dashboard, Orchestration, Audit |
+| `correlation-group.updated` | Correlation | Dashboard, Audit |
 | `runbook.generated` | Knowledge Base | Dashboard, Audit |
 | `kb.updated` | Knowledge Base | Audit |
+| `feedback.captured` | Knowledge Base | Orchestration, Audit |
+| `feedback.summary-updated` | Orchestration | Dashboard, Audit |
 | `circuit-breaker.tripped` | Platform | All contexts, Communication |
+| `dlq.message-received` | Platform | Dashboard, Communication |
 | `notification.sent` | Communication | Audit |
+| `notification.failed` | Communication | Dashboard, Audit |
 | `audit.entry-created` | Platform | Dashboard |
 | `module.state-changed` | Dashboard | Orchestration, Communication |
+| `skill.updated` | Dashboard | Orchestration, Audit |
+| `steering.updated` | Dashboard | Orchestration, Audit |
 | `approval.decision` | Dashboard | Orchestration, Audit |
 
 ## Relationship Types
 
 - **Ingestion → Orchestration**: Upstream/Downstream (Conformist — Orchestration consumes Ingestion's events as-is)
+- **Ingestion → Correlation**: Upstream/Downstream (Conformist — Correlation consumes work-item events)
 - **Orchestration → Execution**: Partnership (co-evolve execution contract)
-- **Orchestration ↔ Knowledge Base**: Partnership (query/response pattern)
+- **Orchestration ↔ Knowledge Base**: Partnership (query/response pattern + feedback loop)
+- **Correlation → Orchestration**: Upstream/Downstream (correlation groups influence triage priority)
 - **Dashboard → Orchestration**: Customer/Supplier (Dashboard drives approval workflow)
-- **Platform → All**: Published Language (standard audit/circuit-breaker events)
+- **Platform → All**: Published Language (standard audit/circuit-breaker/DLQ events)
 - **Communication → All**: Generic Subdomain (notification routing, no domain logic)
+
+## Contract References
+
+| Contract Type | Location | Description |
+|--------------|----------|-------------|
+| OpenAPI 3.1 | `contracts/api/openapi.yaml` | Dashboard REST API (Modules, Approvals, Executions, Audit, Agents) |
+| Event Schemas | `contracts/events/{context}/*.schema.json` | 26 JSON Schema event definitions across 9 namespaces |
+| Command Registry | `contracts/command-registry/{category}/*.json` | PowerShell command definitions for on-prem execution (AD, DNS, Services) |
+| Correlation Rules | `contracts/correlation-rules/{type}/*.json` | Rule schemas for temporal, causal, infrastructure, and repeat patterns |
+| Event Envelope | `contracts/events/common/event-envelope.schema.json` | Standard envelope wrapping all domain events |

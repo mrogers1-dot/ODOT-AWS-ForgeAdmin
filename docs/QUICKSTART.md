@@ -33,13 +33,24 @@ pnpm test:unit
 ### 4. Validate Terraform
 
 ```bash
+# Foundation
 cd terraform/foundation
-terraform init
+terraform init -backend=false
 terraform validate
 
-cd ../contexts/platform
-terraform init
-terraform validate
+# All context modules (8 total)
+for dir in terraform/contexts/*/; do
+  cd "$dir"
+  terraform init -backend=false
+  terraform validate
+  cd -
+done
+```
+
+### 5. Validate contracts
+
+```bash
+pnpm validate:contracts
 ```
 
 ## Deployment
@@ -76,20 +87,34 @@ terraform apply -var-file=../../environments/dev.tfvars
 ```
 DOT-ForgeAdmin/
 ├── contracts/
-│   ├── api/          # OpenAPI specifications
-│   └── events/       # JSON Schema event contracts
+│   ├── api/                # OpenAPI specifications
+│   ├── command-registry/   # PowerShell command definitions (AD, DNS, Services)
+│   ├── correlation-rules/  # Incident correlation rule schemas
+│   └── events/             # JSON Schema event contracts (26 schemas)
 ├── docs/
-│   ├── adr/          # Architecture Decision Records
-│   └── tasks/        # Implementation task groups
+│   ├── adr/                # Architecture Decision Records
+│   ├── architecture/       # Context maps, diagrams
+│   ├── superpowers/        # Feature design specs
+│   └── tasks/              # Implementation task groups
 ├── src/
-│   ├── shared/       # Shared utilities (@forgeadmin/shared)
-│   └── contexts/     # Bounded context implementations
+│   ├── shared/             # Shared utilities (@forgeadmin/shared)
+│   ├── integration/        # End-to-end integration tests
+│   └── contexts/           # Bounded context implementations
+│       ├── communication/  # Notification dispatcher, morning digest, NL commands
+│       ├── correlation/    # Incident correlation engine (rule evaluator, sessions)
+│       ├── dashboard/      # API, frontend (React), WebSocket, domain logic
+│       ├── execution/      # On-prem bridge, playbook expander, orchestrator
+│       ├── ingestion/      # ServiceNow/Email/FortiSIEM normalizers, dedup
+│       ├── knowledge-base/ # Query handler, runbook generator, feedback capture
+│       ├── orchestration/  # Multi-agent pipeline (Triage, Research, Planning, Verification, Supervisor)
+│       └── platform/       # Audit trail, circuit breaker, degradation monitor
 ├── terraform/
-│   ├── foundation/   # Shared infra (EventBridge, VPC, Cognito)
-│   ├── contexts/     # Per-context Terraform modules
-│   ├── environments/ # Environment-specific variables
-│   └── scripts/      # Deploy/destroy automation
-└── scripts/          # Utility scripts (contract validation, etc.)
+│   ├── foundation/         # Shared infra (EventBridge, VPC, Cognito, IAM)
+│   ├── contexts/           # Per-context Terraform modules (8 modules)
+│   ├── environments/       # Environment-specific variables (dev.tfvars)
+│   └── scripts/            # Deploy/destroy/validate automation
+├── .github/workflows/      # CI/CD (PR checks + Terraform deploy)
+└── scripts/                # Utility scripts (contract validation, etc.)
 ```
 
 ## Environment Variables

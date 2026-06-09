@@ -1,0 +1,13 @@
+{
+  "enabled": true,
+  "name": "Update All Documentation",
+  "description": "Manually triggered hook that scans the entire codebase and updates all documentation including docs/README.md, docs/QUICKSTART.md, architecture context maps, ADRs table of contents, task docs, Mermaid diagrams, and any visual maps to reflect the current state of the code.",
+  "version": "1",
+  "when": {
+    "type": "userTriggered"
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "Scan the entire codebase and update ALL project documentation to reflect the current state of the code. This includes:\n\n1. **docs/README.md** — Update the project overview, feature list, and any links.\n2. **docs/QUICKSTART.md** — Ensure setup steps and commands are accurate.\n3. **docs/architecture/context-map.md** — Update the bounded context map, Mermaid diagrams, and integration flows to reflect current services, packages, and their relationships.\n4. **docs/adr/** — Add a table of contents or index if missing; verify existing ADRs still reference valid code paths.\n5. **docs/tasks/README.md** — Update the task index to reflect current task files.\n6. **Visual maps / Mermaid diagrams** — Regenerate or update any Mermaid diagrams in architecture docs to match the current folder structure, service boundaries, event flows, and API contracts.\n7. **contracts/** — Cross-reference contract files (OpenAPI, command-registry, correlation-rules) and ensure docs reference them correctly.\n\nFor each document you update, briefly note what changed. If a document is already accurate, skip it. Prioritize accuracy over verbosity."
+  }
+}

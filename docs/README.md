@@ -7,16 +7,16 @@ ForgeAdmin is an autonomous IT operations platform built for the Ohio Department
 ## Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────────────┐
-│                        EventBridge Bus                                │
-│                    (forgeadmin-events)                                │
-└───┬────────┬────────┬────────┬────────┬────────┬────────┬───────────┘
-    │        │        │        │        │        │        │
-    ▼        ▼        ▼        ▼        ▼        ▼        ▼
-┌────────┐┌────────┐┌────────┐┌────────┐┌────────┐┌────────┐┌────────┐
-│Ingestion││Orchestr││Execution││Knowledge││Dashboard││Communic││Platform│
-│        ││ation   ││        ││  Base  ││  & API ││ation   ││Services│
-└────────┘└────────┘└────────┘└────────┘└────────┘└────────┘└────────┘
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                           EventBridge Bus                                     │
+│                        (forgeadmin-events)                                    │
+└─┬────────┬────────┬────────┬────────┬────────┬────────┬────────┬───────────┘
+  │        │        │        │        │        │        │        │
+  ▼        ▼        ▼        ▼        ▼        ▼        ▼        ▼
+┌────────┐┌────────┐┌────────┐┌────────┐┌────────┐┌────────┐┌────────┐┌────────┐
+│Ingestion││Orchestr││Execution││Knowledge││Correlat-││Dashboard││Communic││Platform│
+│        ││ation   ││        ││  Base  ││ion     ││  & API ││ation   ││Services│
+└────────┘└────────┘└────────┘└────────┘└────────┘└────────┘└────────┘└────────┘
 ```
 
 ## Bounded Contexts
@@ -27,6 +27,7 @@ ForgeAdmin is an autonomous IT operations platform built for the Ohio Department
 | **Orchestration** | Multi-agent pipeline: Triage → Research → Plan → Execute → Verify | Hexagonal |
 | **Execution** | Bridge to on-prem infrastructure, execute approved plans | Hexagonal |
 | **Knowledge Base** | RAG-powered runbook storage and retrieval via Bedrock | Simple Lambda |
+| **Correlation** | Incident correlation and pattern detection across work items | Hexagonal |
 | **Dashboard & API** | Human-in-the-loop approvals, real-time monitoring | React + Lambda |
 | **Communication** | Teams/Slack/email notifications with 3-tier escalation | Simple Lambda |
 | **Platform** | Observability, audit trail, circuit breaker, archival | Terraform + Lambda |
@@ -48,6 +49,13 @@ All architectural decisions are documented in [ADRs](./adr/):
 
 See [QUICKSTART.md](./QUICKSTART.md) for setup instructions.
 
+## Documentation
+
+- [Architecture Context Map](./architecture/context-map.md) — Bounded context relationships, event flows, and Mermaid diagrams
+- [Architecture Decision Records](./adr/README.md) — 8 ADRs documenting key design choices
+- [Implementation Tasks](./tasks/README.md) — 16 task groups across 10 execution waves
+- [Feature Design Specs](./superpowers/specs/) — Detailed designs for major features (correlation, feedback loop, confidence calibration, etc.)
+
 ## Implementation Progress
 
 **Status: ✅ All 10 waves complete** — 285 tests passing, 9 Terraform modules validating, full E2E pipeline tested.
@@ -56,15 +64,16 @@ See [Task Groups](./tasks/README.md) for the full implementation breakdown acros
 
 ### What's Deployed
 
-- **Terraform Infrastructure**: Foundation + 7 bounded context modules (all validate cleanly)
+- **Terraform Infrastructure**: Foundation + 8 bounded context modules (all validate cleanly)
 - **Domain Logic**: All 5 orchestration agents (Triage, Research, Planning, Verification, Supervisor)
 - **Ingestion**: Normalizers for ServiceNow/Email/FortiSIEM + deduplication + event publisher
 - **Execution**: Orchestrator with halt-on-failure + rollback + playbook expansion
-- **Correlation**: Rule evaluator + session manager + group finalizer
+- **Correlation**: Rule evaluator + session manager + group finalizer (temporal, causal, infra, repeat rules)
 - **Platform Services**: Audit trail, circuit breaker, graceful degradation, sensitive data redaction
 - **Dashboard**: Module state management + RBAC + WebSocket handler + Zustand stores
 - **Communication**: Notification dispatcher + morning digest + NL command handler
+- **Knowledge Base**: Query handler + runbook generator + feedback capture
 - **Feedback Loop**: Capture handler + guardrail rules + calibration computation
-- **Contracts**: 25 event schemas + OpenAPI 3.1 spec + contract validator
+- **Contracts**: 26 event schemas + OpenAPI 3.1 spec + 6 command-registry defs + 4 correlation rules + contract validator
 - **CI/CD**: GitHub Actions (PR checks + Terraform deploy with rollback)
-- **Property Tests**: 12 formal invariant proofs (fast-check)
+- **Property Tests**: 9 property test files covering formal invariant proofs (fast-check)
