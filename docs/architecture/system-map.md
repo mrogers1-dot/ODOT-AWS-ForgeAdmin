@@ -305,7 +305,7 @@ graph TD
     EXEC_F --> CAP
     VER --> CAP
 
-    CAP --> S3_FB[S3<br/>feedback/{category}/{month}/]
+    CAP --> S3_FB["S3<br/>feedback/{category}/{month}/"]
     CAP --> DDB_IDX[DynamoDB<br/>Feedback Index]
 
     subgraph Aggregation["Hourly Aggregation"]
