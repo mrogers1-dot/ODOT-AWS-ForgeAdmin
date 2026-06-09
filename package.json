@@ -1,0 +1,27 @@
+{
+  "name": "forgeadmin",
+  "version": "0.1.0",
+  "private": true,
+  "description": "ForgeAdmin — AI-powered IT operations platform for Ohio DOT",
+  "scripts": {
+    "build": "turbo run build",
+    "typecheck": "turbo run typecheck",
+    "lint": "eslint .",
+    "test": "turbo run test",
+    "test:unit": "vitest run",
+    "validate:contracts": "tsx scripts/validate-contracts.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "eslint": "^9.0.0",
+    "fast-check": "^3.22.0",
+    "tsx": "^4.19.0",
+    "turbo": "^2.4.0",
+    "typescript": "^5.7.0",
+    "vitest": "^3.0.0"
+  },
+  "packageManager": "pnpm@9.15.0",
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

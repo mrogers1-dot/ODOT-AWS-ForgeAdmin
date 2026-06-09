@@ -1,0 +1,5 @@
+packages:
+  - "src/shared"
+  - "src/contexts/*"
+  - "src/contexts/dashboard/api"
+  - "src/contexts/dashboard/frontend"

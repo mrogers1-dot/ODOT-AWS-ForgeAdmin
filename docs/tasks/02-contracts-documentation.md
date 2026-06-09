@@ -40,7 +40,7 @@
   - Add contract validation step to GitHub Actions PR workflow
   - _Requirements: 15.4_
 
-- [ ] 3.4 Create ADR documents and project documentation
+- [x] 3.4 Create ADR documents and project documentation
   - Create `docs/adr/template.md` with Status/Context/Decision/Consequences format
   - Create `docs/adr/0001-event-driven-microservices.md`
   - Create `docs/adr/0002-eventbridge-plus-sqs-hybrid.md`
